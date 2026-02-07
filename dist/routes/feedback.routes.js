@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const client_1 = require("@prisma/client");
+const role_middleware_1 = require("../middlewares/role.middleware");
+const feedback_controllers_1 = require("../controllers/feedback.controllers");
+const router = (0, express_1.Router)();
+router.post('/create-feedback', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.CUSTOMER), feedback_controllers_1.createFeedback);
+router.post('/make-response', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.OWNER), feedback_controllers_1.respondToFeedback);
+router.post('/update-status', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.OWNER), feedback_controllers_1.updateFeedbackStatus);
+router.get("/get-feedback", feedback_controllers_1.getAllFeedbacks);
+router.get('/get-feedback-byuser', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.CUSTOMER), feedback_controllers_1.getFeedbackForUser);
+exports.default = router;

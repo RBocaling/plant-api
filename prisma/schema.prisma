@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  OWNER
+  SPECIALIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Status {
+  OPEN
+  RESOLVED
+  INPROGRESS
+  URGENT
+  LOW
+  HIGH
+  MEDIUM
+
+}
+
+enum Type {
+  URGENT_CARE
+  REPOTTING_ADVISE
+  TROUBLESHOOTING
+  CARE_SCHEDULE
+  DISEASE_IDENTIFICATION
+}
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  password       String
+  username       String    @unique
+  firstName  String
+  lastName String
+  role           UserRole
+  archived  Boolean  @default(false)
+  registerOtp Int?
+  isRegisteredVerify Boolean @default(false)
+  profile String?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  supportRequests Support[] 
+  notifications  notif[]  @relation("UserNotifications")
+  histories History[]
+  plantAdvisories PlantAdvisory []
+  feedBack Feedback []
+  activityLogs   ActivityLog[]
+}
+
+model OTP {
+  email     String @id
+  otp       String
+  expiresAt DateTime
+}
+
+model Support {
+  id          Int      @id @default(autoincrement())
+  concern_msg String
+  image       String
+  response    String?
+  customer_id Int
+  customer    User     @relation(fields: [customer_id], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model notif {
+  id          Int @id @default(autoincrement())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation("UserNotifications", fields: [userId], references: [id])
+  userId      Int     
+
+}
+
+model History {
+  id                Int      @id @default(autoincrement())
+  plant_id          String
+  plant_name        String
+  species           String
+  description       String @db.Text
+  demand_philippines String @db.Text
+  scan_confidence   Int
+  identified_disease Json
+  health_status     Int
+  health_category   String @db.Text
+  healthy           Boolean
+  care_instructions Json
+  isOriginal        Boolean
+  special_note      String? @db.Text
+  summary           String @db.Text
+  img_url           String?
+  authenticity_confidence           String?
+  userId            Int
+  user              User     @relation(fields: [userId], references: [id])
+  createdAt         DateTime @default(now())
+}
+
+
+model PlantAdvisory {
+  id          Int      @id @default(autoincrement())
+  plant_name  String
+  createdAt   DateTime @default(now())
+  request_type String
+  status      String
+  priority    String
+  response    String?
+  userId      Int
+ 
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Feedback{
+  id          Int      @id @default(autoincrement())
+  rating      Int
+  description String?
+  createdAt   DateTime @default(now())
+  status      String
+  response    String?
+  userId      Int
+ 
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  username  String
+  activity  String
+  timestamp DateTime @default(now())
+}
+
+model PlantCategory {
+  id        Int    @id @default(autoincrement())
+  name      String
+  imageUrl  String?
+  plants    PlantInfo[]
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlantInfo {
+  id               Int            @id @default(autoincrement())
+  name             String
+  scientificName   String
+  genus            String
+  imageUrl         String?
+ description      String?        @db.Text
+  price            String?  
+  watering         String?
+  fertilizing      String?
+  note             String?        @db.Text
+  harvesting       String
+  categoryId       Int
+  category         PlantCategory    @relation(fields: [categoryId], references: [id])
+  galleryImages    PlantGallery[]
+  archived  Boolean  @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model PlantGallery {
+  id        Int   @id @default(autoincrement())
+  imageUrl  String
+  plantId   Int
+  plant     PlantInfo  @relation(fields: [plantId], references: [id])
+  archived  Boolean  @default(false)
+}
+
+model ExplorePlant {
+  id        Int   @id @default(autoincrement())
+  commonName String
+  scientificName String
+  description String @db.Text
+  funFact String @db.Text
+  ims_url String
+  type String?
+  plantSizes PlantSizes[]
+}
+
+model PlantSizes {
+  id        Int   @id @default(autoincrement())
+  size String
+  price String
+  explorePlantId Int
+  plant   ExplorePlant  @relation(fields: [explorePlantId], references: [id])
+
+}
+
+
+model ContactSupportParent {
+  id        Int             @id @default(autoincrement())
+  email     String          @unique
+  createdAt DateTime        @default(now())
+  contactSupports ContactSupport[]
+}
+
+model ContactSupport {
+  id                 Int                     @id @default(autoincrement())
+  name               String
+  subject            String
+  message            String
+  createdAt          DateTime                @default(now())
+  parentId           Int
+  parent             ContactSupportParent    @relation(fields: [parentId], references: [id])
+  contactSupportReplyOwner ContactSupportReplyOwner[]
+}
+
+model ContactSupportReplyOwner {
+  id                Int             @id @default(autoincrement())
+  subject           String
+  message           String
+  createdAt         DateTime        @default(now())
+  contactSupportId  Int
+  contactSupport    ContactSupport  @relation(fields: [contactSupportId], references: [id])
+}
+
+
+// disease
+model DiseaseCategory {
+  id           Int       @id @default(autoincrement())
+  diseaseTitle String
+  image_url    String
+  diseases     Disease[] 
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Disease {
+  id                 Int      @id @default(autoincrement())
+  disease            String
+  image              String
+  causedBy           String @db.Text
+  mainSymptoms       String @db.Text
+  preventionControl  String @db.Text
+  categoryId         Int
+  category           DiseaseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
