@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.identifyPlantService = void 0;
 const openai_1 = __importDefault(require("openai"));
 const openai = new openai_1.default({
-    apiKey: "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", // mas safe gamitin env
+    apiKey: process.env.OPENAI_API_KEY,
 });
 const priorityPlants = [
     "Aglaonema Fugui Red",

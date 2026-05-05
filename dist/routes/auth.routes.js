@@ -4,7 +4,6 @@ const express_1 = require("express");
 const auth_controllers_1 = require("../controllers/auth.controllers");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const role_middleware_1 = require("../middlewares/role.middleware");
-const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
 //For Login/Register Routes
 router.post("/register", auth_controllers_1.register);
@@ -14,9 +13,9 @@ router.get("/get-info", auth_middleware_1.authenticateToken, auth_controllers_1.
 router.get("/get-users-list", auth_controllers_1.fetchAllCustomerUsers);
 router.get("/get-itadmin-list", auth_middleware_1.authenticateToken, auth_controllers_1.fetchAllAdminUsers);
 router.get("/get-admins-list", auth_middleware_1.authenticateToken, auth_controllers_1.fetchAllSubAdmin);
-router.post("/change-password", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.CUSTOMER), auth_controllers_1.updatePassword);
+router.post("/change-password", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), auth_controllers_1.updatePassword);
 router.post("/edit-user", auth_middleware_1.authenticateToken, auth_controllers_1.updateUser);
-router.post("/delete-user/:id", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.ADMIN), auth_controllers_1.removeUser);
+router.post("/delete-user/:id", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("ADMIN"), auth_controllers_1.removeUser);
 router.post("/verify-account", auth_controllers_1.verifyAccountOtp);
 router.post("/delete-account", auth_controllers_1.deleteAccount);
 router.put("/update-role", auth_controllers_1.updateRole);

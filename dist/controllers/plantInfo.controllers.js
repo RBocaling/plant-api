@@ -39,7 +39,7 @@ const getPlants = async (_req, res) => {
 exports.getPlants = getPlants;
 const getPlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const plant = await (0, plantInfo_services_1.getPlantInfoById)(id);
         if (!plant) {
             return res.status(404).json({ message: 'Plant not found' });
@@ -84,7 +84,7 @@ const addPlant = async (req, res) => {
             fertilizing: fertilizing || '',
             note: note || '',
             harvesting: harvesting || '',
-            categoryId: parseInt(categoryId),
+            categoryId: categoryId,
             galleryImages,
         });
         const fullPlant = await (0, plantInfo_services_1.getPlantInfoById)(newPlant.id);
@@ -97,7 +97,7 @@ const addPlant = async (req, res) => {
 exports.addPlant = addPlant;
 const editPlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const { name, scientificName, genus, description, watering, fertilizing, note, harvesting, price, categoryId, } = req.body;
         const files = req.files;
         const updateData = {
@@ -124,7 +124,7 @@ const editPlant = async (req, res) => {
             updateData.imageUrl = mainImageFile.filename;
         }
         if (categoryId) {
-            updateData.categoryId = parseInt(categoryId);
+            updateData.categoryId = categoryId;
         }
         const updated = await (0, plantInfo_services_1.updatePlantInfo)(id, updateData);
         if (files?.galleryImages && files.galleryImages.length > 0) {
@@ -144,7 +144,7 @@ const editPlant = async (req, res) => {
 exports.editPlant = editPlant;
 const removePlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         await (0, plantInfo_services_1.deletePlantInfo)(id);
         res.status(204).send();
     }
@@ -155,7 +155,7 @@ const removePlant = async (req, res) => {
 exports.removePlant = removePlant;
 const removeGalleryImage = async (req, res) => {
     try {
-        const id = parseInt(req.params.imageId);
+        const id = req.params.imageId;
         await (0, plantInfo_services_2.deleteGalleryImage)(id);
         res.status(204).send();
     }

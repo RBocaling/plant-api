@@ -35,7 +35,7 @@ export const getCategories = async (_req: Request, res: Response) => {
       return res.status(404).json({ message: 'No categories found' });
     }
 
-    const categoriesWithFullUrl = categories.map((category) => ({
+    const categoriesWithFullUrl = categories.map((category:any) => ({
       ...category,
       imageUrl: `${_req.protocol}://${_req.get('host')}/images/${category.imageUrl}`,
     }));

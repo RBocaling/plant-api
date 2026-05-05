@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserNotifications = exports.createNotification = void 0;
 const notifServices = __importStar(require("../services/notif.services"));
 const createNotification = async (req, res) => {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     const { title, description } = req.body;
     if (!userId || !title || !description) {
         res.status(400).json({ error: 'Missing required fields' });
@@ -52,7 +52,7 @@ const createNotification = async (req, res) => {
 };
 exports.createNotification = createNotification;
 const getUserNotifications = async (req, res) => {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     if (!userId) {
         res.status(400).json({ error: 'Missing user ID' });
         return;

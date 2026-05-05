@@ -12,10 +12,10 @@ const identifyPlant = async (req, res) => {
     if (!img_url) {
         throw new Error("plant can't find, please try again!");
     }
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     try {
         const result = await (0, plant_identification_services_1.identifyPlantService)(img_url);
-        const { plant_name, species, description, demand_philippines, scan_confidence, identified_disease, health_status, health_category, healthy, care_instructions, isOriginal, special_note, summary, } = result;
+        const { plant_name, species, description, demand_philippines, scan_confidence, identified_disease, health_status, health_category, healthy, care_instructions, isOriginal, special_note, summary, authenticity_confidence, } = result;
         await prisma_1.default.history.create({
             data: {
                 plant_id: (0, generateOtp_1.generateOtp)(10)?.toString(),
@@ -33,7 +33,8 @@ const identifyPlant = async (req, res) => {
                 isOriginal,
                 special_note,
                 summary,
-                userId,
+                authenticity_confidence: authenticity_confidence?.toString(),
+                userId: userId?.toString(),
             },
         });
         res.status(200).json(result);

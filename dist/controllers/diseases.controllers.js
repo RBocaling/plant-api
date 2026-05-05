@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDiseaseCategory = exports.deleteDisease = exports.updateDisease = exports.createDisease = exports.createCategory = exports.getAllDiseaseCategories = void 0;
+exports.deleteDiseaseCategory = exports.deleteDisease = exports.updateDisease = exports.createDisease = exports.createCategory = exports.getCategoryAdmin = exports.getDiseasesAdmin = exports.getAllDiseaseCategories = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const getAllDiseaseCategories = async (req, res) => {
     try {
@@ -12,6 +12,7 @@ const getAllDiseaseCategories = async (req, res) => {
             orderBy: { id: "asc" },
         });
         const formatted = categories.map((c) => ({
+            id: c?.id,
             diseaseTitle: c.diseaseTitle,
             image_url: c.image_url,
             diseasesList: c.diseases.map((d) => ({
@@ -30,6 +31,30 @@ const getAllDiseaseCategories = async (req, res) => {
     }
 };
 exports.getAllDiseaseCategories = getAllDiseaseCategories;
+const getDiseasesAdmin = async (req, res) => {
+    try {
+        const category = await prisma_1.default.disease.findMany({
+            include: {
+                category: true,
+            },
+        });
+        res.status(200).json(category);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getDiseasesAdmin = getDiseasesAdmin;
+const getCategoryAdmin = async (req, res) => {
+    try {
+        const category = await prisma_1.default.diseaseCategory.findMany();
+        res.status(200).json(category);
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getCategoryAdmin = getCategoryAdmin;
 const createCategory = async (req, res) => {
     try {
         const { diseaseTitle, image_url } = req.body;

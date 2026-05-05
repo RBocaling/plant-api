@@ -2,15 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFeedbackForUser = exports.getFeedbackByIdController = exports.getAllFeedbacks = exports.updateFeedbackStatus = exports.respondToFeedback = exports.createFeedback = void 0;
 const feedback_services_1 = require("../services/feedback.services");
-const client_1 = require("@prisma/client");
 const logs_1 = require("../utils/logs");
 const notif_services_1 = require("../services/notif.services");
 const createFeedback = async (req, res) => {
     console.log("BODY:", req.body);
     try {
-        const userId = Number(req.user?.id);
+        const userId = req.user?.id;
         const { rating, description } = req.body;
-        if (!userId || isNaN(userId)) {
+        if (!userId) {
             return res.status(401).json({ error: "Unauthorized: Invalid user ID." });
         }
         if (typeof rating !== "number" || rating < 1 || rating > 5) {
@@ -37,14 +36,14 @@ exports.createFeedback = createFeedback;
 const respondToFeedback = async (req, res) => {
     try {
         const { id, response: reply } = req.body;
-        const userId = Number(req.user?.id);
-        if (!id || isNaN(Number(id))) {
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid feedback ID.' });
         }
         if (!reply || typeof reply !== 'string') {
             return res.status(400).json({ error: 'Response message is required.' });
         }
-        const updated = await (0, feedback_services_1.makeResponse)(Number(id), reply);
+        const updated = await (0, feedback_services_1.makeResponse)(id, reply);
         await (0, logs_1.logActivity)({
             userId,
             activity: `Responded to feedback ID ${id}`,
@@ -63,19 +62,14 @@ exports.respondToFeedback = respondToFeedback;
 const updateFeedbackStatus = async (req, res) => {
     try {
         const { id, status } = req.body;
-        const userId = Number(req.user?.id);
-        if (!id || isNaN(Number(id))) {
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid feedback ID.' });
         }
         if (!status || typeof status !== 'string') {
             return res.status(400).json({ error: 'Status must be a string.' });
         }
-        if (!Object.values(client_1.Status).includes(status)) {
-            return res.status(400).json({
-                error: `Invalid status. Must be one of: ${Object.values(client_1.Status).join(', ')}`,
-            });
-        }
-        const updated = await (0, feedback_services_1.updateStatus)(Number(id), status);
+        const updated = await (0, feedback_services_1.updateStatus)(id, status);
         await (0, logs_1.logActivity)({
             userId,
             activity: `Updated feedback ID ${id} status to "${status}"`,
@@ -104,9 +98,9 @@ const getAllFeedbacks = async (_req, res) => {
 exports.getAllFeedbacks = getAllFeedbacks;
 const getFeedbackByIdController = async (req, res) => {
     try {
-        const id = Number(req.params.id);
-        const userId = Number(req.user?.id);
-        if (isNaN(id)) {
+        const id = req.params.id;
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid feedback ID.' });
         }
         const feedback = await (0, feedback_services_1.getFeedbackById)(id);
@@ -127,8 +121,8 @@ const getFeedbackByIdController = async (req, res) => {
 exports.getFeedbackByIdController = getFeedbackByIdController;
 const getFeedbackForUser = async (req, res) => {
     try {
-        const userId = Number(req.user?.id);
-        if (!userId || isNaN(userId)) {
+        const userId = req.user?.id;
+        if (!userId) {
             return res.status(401).json({ error: 'Unauthorized: Invalid user ID.' });
         }
         const feedbacks = await (0, feedback_services_1.getUserFeedback)(userId);

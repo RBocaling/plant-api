@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authenticateToken } from "../middlewares/auth.middleware";
-import { UserRole } from "@prisma/client";
 import { Roles } from "../middlewares/role.middleware";
 import {
   contactUsController,
@@ -12,7 +11,7 @@ const router = Router();
 router.post(
   "/create-contact-us",
   authenticateToken,
-  Roles(UserRole.CUSTOMER),
+  Roles("CUSTOMER"),
   contactUsController as any
 );
 router.get("/get-contact-us", getContactUsController as any);

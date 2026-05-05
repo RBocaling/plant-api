@@ -7,7 +7,6 @@ import {
   updateStatus,
   getUserFeedback,
 } from '../services/feedback.services';
-import { Status } from '@prisma/client';
 import { logActivity } from '../utils/logs';
 import { createNotification } from "../services/notif.services";
 
@@ -93,13 +92,9 @@ export const updateFeedbackStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Status must be a string.' });
     }
 
-    if (!Object.values(Status).includes(status as Status)) {
-      return res.status(400).json({
-        error: `Invalid status. Must be one of: ${Object.values(Status).join(', ')}`,
-      });
-    }
+    
 
-    const updated = await updateStatus(id, status as Status);
+    const updated = await updateStatus(id, status as any);
 
      await logActivity({
       userId,

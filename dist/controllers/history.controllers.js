@@ -9,14 +9,14 @@ const logs_1 = require("../utils/logs");
 const generateOtp_1 = require("../utils/generateOtp");
 const createHistoryController = async (req, res) => {
     try {
-        const userId = Number(req.user?.id);
+        const userId = req.user?.id;
         const { plant_name, img_url, species, description, demand_philippines, scan_confidence, identified_disease, health_status, health_category, healthy, care_instructions, isOriginal, special_note, summary, } = req.body;
         if (!plant_name) {
             return res
                 .status(400)
                 .json({ error: "plant_id and plant_name are required." });
         }
-        if (!userId || isNaN(userId)) {
+        if (!userId) {
             return res
                 .status(400)
                 .json({ error: "Invalid or missing user ID from request." });
@@ -38,7 +38,7 @@ const createHistoryController = async (req, res) => {
                 isOriginal,
                 special_note,
                 summary,
-                userId,
+                userId: userId?.toString(),
             },
         });
         await (0, logs_1.logActivity)({
@@ -58,14 +58,14 @@ const createHistoryController = async (req, res) => {
 exports.createHistoryController = createHistoryController;
 const getHistoryByUserController = async (req, res) => {
     try {
-        const userId = Number(req.user?.id);
-        if (!userId || isNaN(userId)) {
+        const userId = req.user?.id;
+        if (!userId) {
             return res
                 .status(400)
                 .json({ error: "Invalid or missing user ID from request." });
         }
         const histories = await prisma_1.default.history.findMany({
-            where: { userId },
+            where: { userId: userId?.toString() },
             orderBy: { createdAt: "desc" },
         });
         await (0, logs_1.logActivity)({

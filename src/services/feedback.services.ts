@@ -1,4 +1,4 @@
-import { PrismaClient, Status } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,7 @@ export const submitFeedback = async (
     const feedback = await prisma.feedback.create({
       data: {
         rating,
-        status: Status.OPEN,
+        status: "OPEN",
         userId,
         response: '',
         description
@@ -51,7 +51,7 @@ export const makeResponse = async (id: string, response: string) => {
   }
 };
 
-export const updateStatus = async (id: string, status: Status) => {
+export const updateStatus = async (id: string, status: any) => {
     const update = await prisma.feedback.findUnique({
       where: { id },
     });

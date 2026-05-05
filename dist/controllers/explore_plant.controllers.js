@@ -22,7 +22,7 @@ exports.getPlants = getPlants;
 // ✅ Get plant by ID
 const getPlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const plant = await prisma.explorePlant.findUnique({
             where: { id },
             include: { plantSizes: true },
@@ -75,7 +75,7 @@ exports.addPlant = addPlant;
 // ✅ Update plant
 const editPlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const { commonName, scientificName, description, funFact, ims_url, plantSizes, type, } = req.body;
         const updatedPlant = await prisma.explorePlant.update({
             where: { id },
@@ -107,7 +107,7 @@ const editPlant = async (req, res) => {
 exports.editPlant = editPlant;
 const removePlant = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const deleteSize = await prisma.plantSizes.deleteMany({
             where: {
                 explorePlantId: id,

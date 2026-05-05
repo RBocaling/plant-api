@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/auth.middleware';
-import { Roles } from '../middlewares/role.middleware';
-import { UserRole } from '@prisma/client';
 import { getPlants, getPlant, addPlant, editPlant, removePlant, uploadPlantImages, } from '../controllers/plantInfo.controllers';
   
 const router = Router();

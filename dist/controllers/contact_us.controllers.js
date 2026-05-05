@@ -8,7 +8,7 @@ const prisma_1 = __importDefault(require("../config/prisma"));
 const contact_us_services_1 = require("../services/contact_us.services");
 const contactUsController = async (req, res) => {
     const { subject, message } = req.body;
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     let email = req.body.email;
     if (!subject || !message) {
         return res.status(400).json({ message: "Subject and message are required." });
@@ -17,7 +17,7 @@ const contactUsController = async (req, res) => {
         let name = "Guest";
         if (userId) {
             const user = await prisma_1.default.user.findUnique({
-                where: { id: userId },
+                where: { id: userId.toString() },
                 select: {
                     firstName: true,
                     lastName: true,

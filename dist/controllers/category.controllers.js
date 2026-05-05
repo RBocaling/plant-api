@@ -41,7 +41,7 @@ const getCategories = async (_req, res) => {
 exports.getCategories = getCategories;
 const getCategory = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const category = await (0, category_services_1.getCategoryById)(id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
@@ -75,7 +75,7 @@ const addCategory = async (req, res) => {
 exports.addCategory = addCategory;
 const editCategory = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         const { name } = req.body;
         const file = req.file;
         const imageUrl = file ? file.filename : undefined;
@@ -92,7 +92,7 @@ const editCategory = async (req, res) => {
 exports.editCategory = editCategory;
 const removeCategory = async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const id = req.params.id;
         await (0, category_services_1.deleteCategory)(id);
         res.status(204).send();
     }

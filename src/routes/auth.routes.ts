@@ -16,7 +16,6 @@ import {
 } from "../controllers/auth.controllers";
 import { authenticateToken } from "../middlewares/auth.middleware";
 import { Roles } from "../middlewares/role.middleware";
-import { UserRole } from "@prisma/client";
 
 const router = Router();
 
@@ -31,14 +30,14 @@ router.get("/get-admins-list", authenticateToken, fetchAllSubAdmin as any);
 router.post(
   "/change-password",
   authenticateToken,
-  Roles(UserRole.CUSTOMER),
+  Roles("CUSTOMER"),
   updatePassword as any
 );
 router.post("/edit-user", authenticateToken, updateUser as any);
 router.post(
   "/delete-user/:id",
   authenticateToken,
-  Roles(UserRole.ADMIN),
+  Roles("ADMIN"),
   removeUser as any
 );
 router.post("/verify-account", verifyAccountOtp as any);

@@ -6,6 +6,8 @@ const router = (0, express_1.Router)();
 router.post("/", diseases_controllers_1.createDisease);
 router.post("/category", diseases_controllers_1.createCategory);
 router.get("/", diseases_controllers_1.getAllDiseaseCategories);
+router.get("/admin-diseases", diseases_controllers_1.getDiseasesAdmin);
+router.get("/admin-category", diseases_controllers_1.getCategoryAdmin);
 router.put("/:id", diseases_controllers_1.updateDisease);
 router.delete("/:id", diseases_controllers_1.deleteDisease);
 exports.default = router;

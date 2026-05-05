@@ -96,9 +96,9 @@ const deleteContactSupport = async (req, res) => {
     const { id } = req.params;
     try {
         await prisma_1.default.contactSupportReplyOwner.deleteMany({
-            where: { contactSupportId: Number(id) },
+            where: { contactSupportId: id },
         });
-        await prisma_1.default.contactSupport.delete({ where: { id: Number(id) } });
+        await prisma_1.default.contactSupport.delete({ where: { id } });
         return res
             .status(200)
             .json({ message: "Support message and replies deleted successfully" });

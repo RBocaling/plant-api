@@ -1,14 +1,13 @@
 import argon2 from 'argon2';
 import prisma from '../config/prisma';
 import { generateAccessToken, generateRefreshToken } from '../utils/token';
-import { UserRole } from '@prisma/client';
 import { sendVerificationEmail } from "../utils/email";
 import { generateOtp } from "../utils/generateOtp";
 
 export const registerUser = async (
   email: string,
   password: string,
-  role: UserRole,
+  role: any,
   username: string,
   firstName: string,
   lastName: string,
@@ -238,7 +237,7 @@ export const archiveUser = async (userId: any) => {
 export const getAllAdmin = async () => {
   try {
     const admin = await prisma.user.findMany({
-       where: { role: UserRole.ADMIN },
+       where: { role: "ADMIN" },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -263,7 +262,7 @@ export const getAllSubAdmin = async () => {
     const admins = await prisma.user.findMany({
        where: {
         role: {
-          in: [UserRole.SPECIALIST, UserRole.OWNER], 
+          in: ["SPECIALIST", "OWNER"], 
         },
       },
       orderBy: { createdAt: 'desc' },

@@ -7,7 +7,6 @@ import {
   updatePlantAdvisoryPriority,
   makeResponse,
 } from '../services/plant_advisory.services';
-import { Type, Status } from '@prisma/client';
 import { logActivity } from '../utils/logs';
 
 export const createPlantAdvisory = async (req: Request, res: Response) => {
@@ -120,9 +119,7 @@ export const updateAdvisoryStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid advisory ID.' });
     }
 
-    if (!Object.values(Status).includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value.' });
-    }
+  
 
     const updated = await updatePlantAdvisoryStatus(id, status);
 
@@ -149,10 +146,6 @@ export const updateAdvisoryPriority = async (req: Request, res: Response) => {
     
     if (!id) {
       return res.status(400).json({ error: 'Invalid advisory ID.' });
-    }
-
-    if (!Object.values(Status).includes(priority)) {
-      return res.status(400).json({ error: 'Invalid priority value.' });
     }
 
     const updated = await updatePlantAdvisoryPriority(id, priority);

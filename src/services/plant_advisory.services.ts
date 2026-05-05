@@ -1,13 +1,13 @@
-import { PrismaClient, Status, Type } from "@prisma/client";
+import { PrismaClient} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 
 export const submitPlantAdvisory = async (
   plant_name: string,
-  request_type: Type,
-  status: Status,
-  priority: Status,
+  request_type: any,
+  status: any,
+  priority: any,
   customer_id: any,
 ) => {
   try {
@@ -92,7 +92,7 @@ export const getPlantAdvisoryById = async (id: string) => {
   }
 };
 
-export const updatePlantAdvisoryStatus = async (id: any, status: Status) => {
+export const updatePlantAdvisoryStatus = async (id: any, status: any) => {
   const advisory = await prisma.plantAdvisory.findUnique({
     where: { id },
   });
@@ -113,7 +113,7 @@ export const updatePlantAdvisoryStatus = async (id: any, status: Status) => {
 };
 
 
-export const updatePlantAdvisoryPriority = async (id: any, priority: Status) => {
+export const updatePlantAdvisoryPriority = async (id: any, priority: any) => {
   const advisory = await prisma.plantAdvisory.findUnique({
     where: { id },
   });

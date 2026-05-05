@@ -11,7 +11,7 @@ const submitFeedback = async (rating, userId, description) => {
         const feedback = await prisma.feedback.create({
             data: {
                 rating,
-                status: client_1.Status.OPEN,
+                status: "OPEN",
                 userId,
                 response: '',
                 description

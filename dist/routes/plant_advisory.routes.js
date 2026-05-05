@@ -2,14 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
-const client_1 = require("@prisma/client");
 const role_middleware_1 = require("../middlewares/role.middleware");
 const plant_advisory_controllers_1 = require("../controllers/plant_advisory.controllers");
 const router = (0, express_1.Router)();
-router.post('/create-advisory', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.CUSTOMER), plant_advisory_controllers_1.createPlantAdvisory);
+router.post('/create-advisory', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), plant_advisory_controllers_1.createPlantAdvisory);
 router.get('/get-all-advisory', auth_middleware_1.authenticateToken, plant_advisory_controllers_1.getAllPlantAdvisories);
-router.get('/get-advisory/:id', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.SPECIALIST), plant_advisory_controllers_1.getPlantAdvisoryByIdController);
-router.post('/update-status', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.SPECIALIST), plant_advisory_controllers_1.updateAdvisoryStatus);
-router.post('/update-priority', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)(client_1.UserRole.SPECIALIST), plant_advisory_controllers_1.updateAdvisoryPriority);
+router.get('/get-advisory/:id', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), plant_advisory_controllers_1.getPlantAdvisoryByIdController);
+router.post('/update-status', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), plant_advisory_controllers_1.updateAdvisoryStatus);
+router.post('/update-priority', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), plant_advisory_controllers_1.updateAdvisoryPriority);
 router.post('/make-response', auth_middleware_1.authenticateToken, plant_advisory_controllers_1.respondToAdvisory);
 exports.default = router;

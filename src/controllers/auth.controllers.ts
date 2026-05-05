@@ -17,7 +17,6 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/token";
-import { UserRole } from "@prisma/client";
 import { logActivity } from "../utils/logs";
 import { createNotification } from "../services/notif.services";
 

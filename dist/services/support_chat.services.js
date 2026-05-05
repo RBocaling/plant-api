@@ -10,7 +10,7 @@ const submitSupportConcern = async ({ concern_msg, image, customer_id, }) => {
             data: {
                 concern_msg,
                 image,
-                customer_id,
+                customerId: customer_id?.toString(),
                 response: "",
             },
         });

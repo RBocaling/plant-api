@@ -5,7 +5,7 @@ const support_chat_services_1 = require("../services/support_chat.services");
 const createSupportConcern = async (req, res) => {
     try {
         const { concern_msg, image } = req.body;
-        const customer_id = Number(req.user?.id);
+        const customer_id = req.user?.id;
         if (!concern_msg || !image) {
             return res.status(400).json({ error: 'concern_msg and image are required.' });
         }
@@ -24,7 +24,7 @@ const replyToSupport = async (req, res) => {
         if (!id || !response) {
             return res.status(400).json({ error: 'ID and response are required.' });
         }
-        const updated = await (0, support_chat_services_1.updateResponse)(Number(id), response);
+        const updated = await (0, support_chat_services_1.updateResponse)(id, response);
         return res.status(200).json({
             message: 'Response sent to customer and saved.',
             data: updated,
@@ -49,7 +49,7 @@ const getAllSupportConcerns = async (req, res) => {
 exports.getAllSupportConcerns = getAllSupportConcerns;
 const getSupportConcernById = async (req, res) => {
     try {
-        const id = Number(req.params.id);
+        const id = req.params.id;
         const concern = await (0, support_chat_services_1.getSupportConcernByIdAdmin)(id);
         if (!concern) {
             return res.status(404).json({ error: 'Support concern not found.' });

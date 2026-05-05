@@ -96,8 +96,8 @@ const refreshAccessToken = async (req, res) => {
 };
 exports.refreshAccessToken = refreshAccessToken;
 const getInfo = async (req, res) => {
-    const userId = Number(req.user?.id);
-    if (!userId || isNaN(userId)) {
+    const userId = req.user?.id;
+    if (!userId) {
         return res.status(400).json({ message: "Invalid user ID" });
     }
     try {
@@ -113,13 +113,13 @@ const getInfo = async (req, res) => {
 };
 exports.getInfo = getInfo;
 const updatePassword = async (req, res) => {
-    const userId = Number(req.user?.id);
+    const userId = req.user?.id;
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
+    if (!currentPassword || !newPassword || !confirmNewPassword || !userId) {
         return res.status(400).json({ message: "All fields are required" });
     }
     try {
-        const response = await (0, auth_services_1.changePassword)(userId, currentPassword, newPassword, confirmNewPassword);
+        const response = await (0, auth_services_1.changePassword)(userId?.toString(), currentPassword, newPassword, confirmNewPassword);
         await (0, logs_1.logActivity)({ userId, activity: "Changed password" });
         res.status(200).json(response);
     }
@@ -130,7 +130,7 @@ const updatePassword = async (req, res) => {
 exports.updatePassword = updatePassword;
 const updateUser = async (req, res) => {
     const { id, email, username, firstName, lastName, profile } = req.body;
-    if (!id || isNaN(Number(id))) {
+    if (!id) {
         return res.status(400).json({ message: "A valid user ID is required" });
     }
     // const user = await prisma.user.findUnique({ where: { id: Number(id) } });
@@ -141,14 +141,14 @@ const updateUser = async (req, res) => {
     //   return res.status(403).json({ message: 'Only users with role CUSTOMER can be edited' });
     // }
     try {
-        const updated = await (0, auth_services_1.editUser)(Number(id), {
+        const updated = await (0, auth_services_1.editUser)(id, {
             email,
             username,
             firstName,
             lastName,
             profile,
         });
-        await (0, logs_1.logActivity)({ userId: Number(id), activity: "Edited user profile" });
+        await (0, logs_1.logActivity)({ userId: id, activity: "Edited user profile" });
         return res
             .status(200)
             .json({ message: "User updated successfully", data: updated });
@@ -170,7 +170,7 @@ const removeUser = async (req, res) => {
         }
         const result = await (0, auth_services_1.archiveUser)(userId);
         await (0, logs_1.logActivity)({
-            userId: Number(req.user?.id),
+            userId: req.user?.id,
             activity: `Archived user ID ${id}`,
         });
         return res.status(200).json(result);
@@ -297,7 +297,7 @@ const updateRole = async (req, res) => {
     try {
         const response = await prisma_1.default.user.update({
             where: {
-                id: Number(id),
+                id,
             },
             data: {
                 role,

@@ -8,11 +8,11 @@ export const getAllDiseaseCategories = async (req: Request, res: Response) => {
       orderBy: { id: "asc" },
     });
 
-      const formatted = categories.map((c) => ({
+      const formatted = categories.map((c:any) => ({
         id: c?.id,
         diseaseTitle: c.diseaseTitle,
         image_url: c.image_url,
-        diseasesList: c.diseases.map((d) => ({
+        diseasesList: c.diseases.map((d:any) => ({
           disease: d.disease,
           image: d.image,
           causedBy: d.causedBy,

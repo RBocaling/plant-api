@@ -16,7 +16,7 @@ export const getAllPlantInfo = async () => {
   }
 };
 
-export const getPlantInfoById = async (id: number) => {
+export const getPlantInfoById = async (id: string) => {
   try {
     return await prisma.plantInfo.findUnique({
       where: { id },
@@ -45,7 +45,7 @@ export const createPlantInfo = async (data: {
   }[];
     harvesting: string;
 
-  categoryId: number;
+  categoryId: any;
 }) => {
   try {
     console.log('Creating PlantInfo with data:', data);
@@ -91,7 +91,7 @@ export const createPlantInfo = async (data: {
 };
 
 export const updatePlantInfo = async (
-  id: number,
+  id: any,
   data: Partial<{
     name: string;
     scientificName: string;
@@ -111,7 +111,7 @@ export const updatePlantInfo = async (
   }
 };
 
-export const deletePlantInfo = async (id: number) => {
+export const deletePlantInfo = async (id: string) => {
   try {
     return await prisma.plantInfo.update({
       where: { id },
@@ -123,7 +123,7 @@ export const deletePlantInfo = async (id: number) => {
 };
 
 
-export const deleteGalleryImage = async (id: number) => {
+export const deleteGalleryImage = async (id: any) => {
     try {
       return await prisma.plantGallery.delete({
         where: { id },

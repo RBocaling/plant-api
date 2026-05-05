@@ -2,14 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateAdvisoryPriority = exports.updateAdvisoryStatus = exports.getPlantAdvisoryByIdController = exports.getAllPlantAdvisories = exports.respondToAdvisory = exports.createPlantAdvisory = void 0;
 const plant_advisory_services_1 = require("../services/plant_advisory.services");
-const client_1 = require("@prisma/client");
 const logs_1 = require("../utils/logs");
 const createPlantAdvisory = async (req, res) => {
     try {
-        const customer_id = Number(req.user?.id);
+        const customer_id = req.user?.id;
         const { plant_name, request_type, status, priority } = req.body;
         console.log("req.body", req.body);
-        if (!customer_id || isNaN(customer_id)) {
+        if (!customer_id) {
             return res.status(401).json({ error: 'Unauthorized: Invalid customer ID.' });
         }
         if (!plant_name || !request_type || !status || !priority) {
@@ -37,13 +36,13 @@ exports.createPlantAdvisory = createPlantAdvisory;
 const respondToAdvisory = async (req, res) => {
     try {
         const { id, response: reply } = req.body;
-        if (!id || isNaN(Number(id))) {
+        if (!id) {
             return res.status(400).json({ error: 'Invalid advisory ID.' });
         }
         if (!reply || typeof reply !== 'string') {
             return res.status(400).json({ error: 'Response message is required.' });
         }
-        const updated = await (0, plant_advisory_services_1.makeResponse)(Number(id), reply);
+        const updated = await (0, plant_advisory_services_1.makeResponse)(id, reply);
         return res.status(200).json({
             message: `Response added to advisory ID ${id}.`,
             data: updated,
@@ -68,9 +67,9 @@ const getAllPlantAdvisories = async (_req, res) => {
 exports.getAllPlantAdvisories = getAllPlantAdvisories;
 const getPlantAdvisoryByIdController = async (req, res) => {
     try {
-        const id = Number(req.params.id);
-        const userId = Number(req.user?.id);
-        if (isNaN(id)) {
+        const id = req.params.id;
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid advisory ID.' });
         }
         const advisory = await (0, plant_advisory_services_1.getPlantAdvisoryById)(id);
@@ -92,14 +91,11 @@ exports.getPlantAdvisoryByIdController = getPlantAdvisoryByIdController;
 const updateAdvisoryStatus = async (req, res) => {
     try {
         const { id, status } = req.body;
-        const userId = Number(req.user?.id);
-        if (!id || isNaN(Number(id))) {
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid advisory ID.' });
         }
-        if (!Object.values(client_1.Status).includes(status)) {
-            return res.status(400).json({ error: 'Invalid status value.' });
-        }
-        const updated = await (0, plant_advisory_services_1.updatePlantAdvisoryStatus)(Number(id), status);
+        const updated = await (0, plant_advisory_services_1.updatePlantAdvisoryStatus)(id, status);
         await (0, logs_1.logActivity)({
             userId,
             activity: `Updated status of advisory ID ${id} to "${status}"`,
@@ -118,14 +114,11 @@ exports.updateAdvisoryStatus = updateAdvisoryStatus;
 const updateAdvisoryPriority = async (req, res) => {
     try {
         const { id, priority } = req.body;
-        const userId = Number(req.user?.id);
-        if (!id || isNaN(Number(id))) {
+        const userId = req.user?.id;
+        if (!id) {
             return res.status(400).json({ error: 'Invalid advisory ID.' });
         }
-        if (!Object.values(client_1.Status).includes(priority)) {
-            return res.status(400).json({ error: 'Invalid priority value.' });
-        }
-        const updated = await (0, plant_advisory_services_1.updatePlantAdvisoryPriority)(Number(id), priority);
+        const updated = await (0, plant_advisory_services_1.updatePlantAdvisoryPriority)(id, priority);
         await (0, logs_1.logActivity)({
             userId,
             activity: `Updated priority of advisory ID ${id} to "${priority}"`,

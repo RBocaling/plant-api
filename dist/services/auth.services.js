@@ -7,7 +7,6 @@ exports.getAllSubAdmin = exports.getAllAdmin = exports.archiveUser = exports.edi
 const argon2_1 = __importDefault(require("argon2"));
 const prisma_1 = __importDefault(require("../config/prisma"));
 const token_1 = require("../utils/token");
-const client_1 = require("@prisma/client");
 const email_1 = require("../utils/email");
 const generateOtp_1 = require("../utils/generateOtp");
 const registerUser = async (email, password, role, username, firstName, lastName, profile) => {
@@ -23,6 +22,7 @@ const registerUser = async (email, password, role, username, firstName, lastName
             lastName,
             profile,
             registerOtp: Number(otp),
+            isRegisteredVerify: true
         },
     });
     if (!user) {
@@ -191,7 +191,7 @@ exports.archiveUser = archiveUser;
 const getAllAdmin = async () => {
     try {
         const admin = await prisma_1.default.user.findMany({
-            where: { role: client_1.UserRole.ADMIN },
+            where: { role: "ADMIN" },
             orderBy: { createdAt: 'desc' },
             select: {
                 id: true,
@@ -216,7 +216,7 @@ const getAllSubAdmin = async () => {
         const admins = await prisma_1.default.user.findMany({
             where: {
                 role: {
-                    in: [client_1.UserRole.SPECIALIST, client_1.UserRole.OWNER],
+                    in: ["SPECIALIST", "OWNER"],
                 },
             },
             orderBy: { createdAt: 'desc' },
