@@ -95,7 +95,7 @@ export const updateDisease = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updated = await prisma.disease.update({
-      where: { id: Number(id) },
+      where: { id },
       data: req.body,
     });
     res.json(updated);
@@ -107,7 +107,7 @@ export const updateDisease = async (req: Request, res: Response) => {
 
 export const deleteDisease = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     await prisma.disease.delete({ where: { id } });
     res.status(204).send();
   } catch (error: any) {
@@ -118,7 +118,7 @@ export const deleteDisease = async (req: Request, res: Response) => {
 
 export const deleteDiseaseCategory = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
     const deleteDiseases = await prisma.disease.deleteMany({
       where: { categoryId: id },

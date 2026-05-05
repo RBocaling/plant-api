@@ -92,14 +92,7 @@ export const createPlantInfo = async (data: {
 
 export const updatePlantInfo = async (
   id: any,
-  data: Partial<{
-    name: string;
-    scientificName: string;
-    genus: string;
-    imageUrl: string;
-    description: string;
-    categoryId: number;
-  }>
+  data: any
 ) => {
   try {
     return await prisma.plantInfo.update({
