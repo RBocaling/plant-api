@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+/* =====================
+   ENUMS (NO CHANGE)
+   ===================== */
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  OWNER
+  SPECIALIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Status {
+  OPEN
+  RESOLVED
+  INPROGRESS
+  URGENT
+  LOW
+  HIGH
+  MEDIUM
+}
+
+enum Type {
+  URGENT_CARE
+  REPOTTING_ADVISE
+  TROUBLESHOOTING
+  CARE_SCHEDULE
+  DISEASE_IDENTIFICATION
+}
+
+/* =====================
+   USER & AUTH
+   ===================== */
+model User {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  email              String   @unique
+  password           String
+  username           String   @unique
+  firstName          String
+  lastName           String
+  role               UserRole
+  archived            Boolean  @default(false)
+  registerOtp        Int?
+  isRegisteredVerify Boolean   @default(false)
+  profile            String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  supportRequests    Support[]
+  notifications      notif[] @relation("UserNotifications")
+  histories          History[]
+  plantAdvisories    PlantAdvisory[]
+  feedBack           Feedback[]
+  activityLogs       ActivityLog[]
+}
+
+model OTP {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+}
+
+
+/* =====================
+   SUPPORT / NOTIF
+   ===================== */
+model Support {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  concern_msg  String
+  image        String
+  response     String?
+  customerId   String   @db.ObjectId
+  customer     User     @relation(fields: [customerId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model notif {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+
+  userId      String   @db.ObjectId
+  user        User     @relation("UserNotifications", fields: [userId], references: [id])
+}
+
+/* =====================
+   HISTORY / LOGS
+   ===================== */
+model History {
+  id                       String   @id @default(auto()) @map("_id") @db.ObjectId
+  plant_id                 String
+  plant_name               String
+  species                  String
+  description              String
+  demand_philippines       String
+  scan_confidence           Int
+  identified_disease       Json
+  health_status             Int
+  health_category          String
+  healthy                  Boolean
+  care_instructions        Json
+  isOriginal               Boolean
+  special_note             String?
+  summary                  String
+  img_url                  String?
+  authenticity_confidence  String?
+
+  userId                   String   @db.ObjectId
+  user                     User     @relation(fields: [userId], references: [id])
+
+  createdAt                DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  username  String
+  activity  String
+  timestamp DateTime @default(now())
+}
+
+/* =====================
+   ADVISORY / FEEDBACK
+   ===================== */
+model PlantAdvisory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  plant_name  String
+  request_type String
+  status      String
+  priority    String
+  response    String?
+
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model Feedback {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating      Int
+  description String?
+  status      String
+  response    String?
+
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+/* =====================
+   PLANTS
+   ===================== */
+model PlantCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  imageUrl  String?
+  archived  Boolean  @default(false)
+
+  plants    PlantInfo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlantInfo {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  scientificName String
+  genus          String
+  imageUrl       String?
+  description    String?
+  price          String?
+  watering       String?
+  fertilizing    String?
+  note           String?
+  harvesting     String
+  archived       Boolean  @default(false)
+
+  categoryId     String   @db.ObjectId
+  category       PlantCategory @relation(fields: [categoryId], references: [id])
+
+  galleryImages  PlantGallery[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PlantGallery {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl  String
+  archived  Boolean @default(false)
+
+  plantId   String   @db.ObjectId
+  plant     PlantInfo @relation(fields: [plantId], references: [id])
+}
+
+/* =====================
+   EXPLORE PLANT
+   ===================== */
+model ExplorePlant {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  commonName     String
+  scientificName String
+  description    String
+  funFact        String
+  ims_url        String
+  type           String?
+
+  plantSizes     PlantSizes[]
+}
+
+model PlantSizes {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  size           String
+  price          String
+
+  explorePlantId String   @db.ObjectId
+  plant          ExplorePlant @relation(fields: [explorePlantId], references: [id])
+}
+
+/* =====================
+   CONTACT SUPPORT
+   ===================== */
+model ContactSupportParent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  contactSupports ContactSupport[]
+}
+
+model ContactSupport {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+
+  parentId  String   @db.ObjectId
+  parent    ContactSupportParent @relation(fields: [parentId], references: [id])
+
+  contactSupportReplyOwner ContactSupportReplyOwner[]
+}
+
+model ContactSupportReplyOwner {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  subject          String
+  message          String
+  createdAt        DateTime @default(now())
+
+  contactSupportId String   @db.ObjectId
+  contactSupport   ContactSupport @relation(fields: [contactSupportId], references: [id])
+}
+
+/* =====================
+   DISEASE
+   ===================== */
+model DiseaseCategory {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  diseaseTitle String
+  image_url    String
+
+  diseases     Disease[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Disease {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  disease            String
+  image              String
+  causedBy           String
+  mainSymptoms       String
+  preventionControl  String
+
+  categoryId         String   @db.ObjectId
+  category           DiseaseCategory @relation(fields: [categoryId], references: [id])
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
