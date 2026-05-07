@@ -2,18 +2,35 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSupportConcernById = exports.getAllSupportConcerns = exports.replyToSupport = exports.createSupportConcern = void 0;
 const support_chat_services_1 = require("../services/support_chat.services");
+const supportValidation_1 = require("../utils/supportValidation");
 const createSupportConcern = async (req, res) => {
     try {
-        const { concern_msg, image } = req.body;
+        const { image, urgency, generateInitialAiReply } = req.body;
         const customer_id = req.user?.id;
-        if (!concern_msg || !image) {
+        if (!image) {
+            return res.status(400).json({ error: 'image is required.' });
+        }
+        const concern_msg = (0, supportValidation_1.validateSupportMessage)(req.body?.concern_msg);
+        const validatedUrgency = (0, supportValidation_1.validateUrgency)(urgency);
+        if (!concern_msg) {
             return res.status(400).json({ error: 'concern_msg and image are required.' });
         }
-        const support = await (0, support_chat_services_1.submitSupportConcern)({ concern_msg, image, customer_id });
+        const support = await (0, support_chat_services_1.submitSupportConcern)({
+            concern_msg,
+            image,
+            customer_id,
+            urgency: validatedUrgency,
+            generateInitialAiReply: Boolean(generateInitialAiReply),
+        });
         return res.status(201).json({ message: 'Support concern submitted.', data: support });
     }
     catch (error) {
-        console.error('Controller Error:', error);
+        if (error?.message?.includes("Support message") ||
+            error?.message?.includes("Urgency must be") ||
+            error?.message?.includes("Customer ID is required")) {
+            return res.status(400).json({ error: error.message });
+        }
+        console.error("Support concern creation failed.");
         return res.status(500).json({ error: 'Failed to submit concern.' });
     }
 };
@@ -31,7 +48,7 @@ const replyToSupport = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Controller Error - replyToSupport:', error);
+        console.error("Support reply failed.");
         return res.status(500).json({ error: error.message || 'Failed to respond.' });
     }
 };
@@ -42,7 +59,7 @@ const getAllSupportConcerns = async (req, res) => {
         return res.status(200).json({ message: 'All support concerns retrieved.', data: concerns });
     }
     catch (error) {
-        console.error('Controller Error:', error);
+        console.error("Fetching support concerns failed.");
         return res.status(500).json({ error: 'Failed to fetch support concerns.' });
     }
 };
@@ -57,7 +74,7 @@ const getSupportConcernById = async (req, res) => {
         return res.status(200).json({ message: 'Support concern retrieved.', data: concern });
     }
     catch (error) {
-        console.error('Controller Error:', error);
+        console.error("Fetching support concern by ID failed.");
         return res.status(500).json({ error: 'Failed to fetch support concern.' });
     }
 };

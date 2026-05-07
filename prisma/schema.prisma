@@ -40,6 +40,20 @@ enum Type {
   DISEASE_IDENTIFICATION
 }
 
+enum SupportUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 /* =====================
    USER & AUTH
    ===================== */
@@ -65,6 +79,7 @@ model User {
   plantAdvisories    PlantAdvisory[]
   feedBack           Feedback[]
   activityLogs       ActivityLog[]
+  aiSupportChats     AISupportChat[]
 }
 
 model OTP {
@@ -83,6 +98,10 @@ model Support {
   concern_msg  String
   image        String
   response     String?
+  urgency               SupportUrgency @default(MEDIUM)
+  status                SupportStatus  @default(OPEN)
+  expectedResponseHours Int            @default(24)
+  aiGeneratedReply      String?
   customerId   String   @db.ObjectId
   customer     User     @relation(fields: [customerId], references: [id])
   createdAt    DateTime @default(now())
@@ -268,6 +287,17 @@ model ContactSupportReplyOwner {
 
   contactSupportId String   @db.ObjectId
   contactSupport   ContactSupport @relation(fields: [contactSupportId], references: [id])
+}
+
+model AISupportChat {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  role      String
+  message   String
+
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 /* =====================

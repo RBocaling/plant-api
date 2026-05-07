@@ -20,6 +20,7 @@ import multer from "multer";
 import plantRoutes from "./routes/plant_identification.routes";
 import explorePlantRoutes from "./routes/explore_plant.routes";
 import contactSupportRoutes from "./routes/contactSupport.routes";
+import supportRoutes from "./routes/support.routes";
 dotenv.config();
 
 const app = express();
@@ -56,6 +57,7 @@ app.use("/api/categories/", categoryRoutes);
 app.use("/api/plant-identification", plantRoutes);
 app.use("/api/explore-plant", explorePlantRoutes);
 app.use("/api/contact-support", contactSupportRoutes);
+app.use("/api/support", supportRoutes);
 app.use("/api/diseases", diseases);
 
 export default app;

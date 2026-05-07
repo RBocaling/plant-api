@@ -1,32 +1,61 @@
-import { PrismaClient } from '@prisma/client';
-import nodemailer from "nodemailer";
+import { Prisma, PrismaClient } from '@prisma/client';
 import { transporter } from "../utils/email";
+import { generateAISupportReply } from "./ai_support_chat.services";
+import {
+  getExpectedResponseHours,
+  SupportUrgencyValue,
+} from "../utils/supportValidation";
 const prisma = new PrismaClient();
 
 interface SupportInput {
   concern_msg: string;
   image: string;
-  customer_id: any;
+  customer_id: string | number | undefined;
+  urgency?: SupportUrgencyValue;
+  generateInitialAiReply?: boolean;
 }
 
 export const submitSupportConcern = async ({
   concern_msg,
   image,
   customer_id,
+  urgency = "MEDIUM",
+  generateInitialAiReply = false,
 }: SupportInput) => {
   try {
+    const customerId = customer_id?.toString();
+    if (!customerId) {
+      throw new Error("Customer ID is required.");
+    }
+
+    const expectedResponseHours = getExpectedResponseHours(urgency);
+    let aiGeneratedReply: string | null = null;
+
+    if (generateInitialAiReply) {
+      try {
+        aiGeneratedReply = await generateAISupportReply(concern_msg, customerId);
+      } catch (error) {
+        console.error("AI initial support reply generation failed.");
+      }
+    }
+
+    const createData: Prisma.SupportUncheckedCreateInput = {
+      concern_msg,
+      image,
+      customerId,
+      response: "",
+      urgency,
+      expectedResponseHours,
+      aiGeneratedReply,
+    };
+
     const support = await prisma.support.create({
-      data: {
-        concern_msg,
-        image,
-        customerId: customer_id?.toString(),
-        response: "",
-      },
+      data: createData,
     });
 
     return support;
   } catch (error) {
-    console.error("Service Error:", error);
+    console.error("Support creation failed.");
     throw new Error("Error creating support entry");
   }
 };
