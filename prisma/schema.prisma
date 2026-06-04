@@ -138,6 +138,8 @@ model History {
   summary                  String
   img_url                  String?
   authenticity_confidence  String?
+  validated_info           Json?
+  has_local_sources        Boolean  @default(false)
 
   userId                   String   @db.ObjectId
   user                     User     @relation(fields: [userId], references: [id])

@@ -3,33 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.identifyPlantService = void 0;
+exports.getValidatedPlantsService = exports.identifyPlantService = void 0;
 const openai_1 = __importDefault(require("openai"));
+const validatedPlants_1 = require("../data/validatedPlants");
+const matchValidatedPlant_1 = require("../utils/matchValidatedPlant");
 const openai = new openai_1.default({
     apiKey: process.env.OPENAI_API_KEY,
 });
-const priorityPlants = [
-    "Aglaonema Fugui Red",
-    "Alocasia Magic Mirror",
-    "Anthurium",
-    "Bromeliad",
-    "Rubber fig",
-    "Calathea Dottie",
-    "Dendrobium Orchid",
-    "Caladium",
-    "Millionaire Snake Plant",
-    "Golden Flame Sansevieria",
-    "Fortune Plant",
-    "Orbifolia",
-    "Philodendron Birkin",
-    "Snake Plant (dracaena trifasciata)",
-    "Peace Lily",
-    "Sansevieria Bacularis (Money Catcher)",
-    "Saplera",
-    "Silver Dragon",
-    "San Francisco Plant",
-    "Variegated Money Tree",
-];
+const priorityPlants = validatedPlants_1.PRIORITY_PLANT_NAMES;
 const identifyPlantService = async (imageUrl) => {
     try {
         const prompt = `
@@ -156,10 +137,21 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
                 parsed.health_category = "Critical: Plant is at risk of dying";
             }
         }
-        return parsed;
+        const validatedPlant = (0, matchValidatedPlant_1.findValidatedPlant)(parsed.plant_name);
+        if (validatedPlant) {
+            return (0, matchValidatedPlant_1.enrichWithValidatedSources)(parsed, validatedPlant);
+        }
+        return {
+            ...parsed,
+            has_local_sources: false,
+        };
     }
     catch (error) {
         throw new Error(`OpenAI API error: ${error.message}`);
     }
 };
 exports.identifyPlantService = identifyPlantService;
+const getValidatedPlantsService = () => {
+    return validatedPlants_1.PRIORITY_PLANT_NAMES;
+};
+exports.getValidatedPlantsService = getValidatedPlantsService;

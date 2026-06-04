@@ -1,31 +1,15 @@
 import OpenAI from "openai";
+import { PRIORITY_PLANT_NAMES } from "../data/validatedPlants";
+import {
+  enrichWithValidatedSources,
+  findValidatedPlant,
+} from "../utils/matchValidatedPlant";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const priorityPlants = [
-  "Aglaonema Fugui Red",
-  "Alocasia Magic Mirror",
-  "Anthurium",
-  "Bromeliad",
-  "Rubber fig",
-  "Calathea Dottie",
-  "Dendrobium Orchid",
-  "Caladium",
-  "Millionaire Snake Plant",
-  "Golden Flame Sansevieria",
-  "Fortune Plant",
-  "Orbifolia",
-  "Philodendron Birkin",
-  "Snake Plant (dracaena trifasciata)",
-  "Peace Lily",
-  "Sansevieria Bacularis (Money Catcher)",
-  "Saplera",
-  "Silver Dragon",
-  "San Francisco Plant",
-  "Variegated Money Tree",
-];
+const priorityPlants = PRIORITY_PLANT_NAMES;
 
 export const identifyPlantService = async (imageUrl: string) => {
   try {
@@ -163,8 +147,20 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
       }
     }
 
-    return parsed;
+    const validatedPlant = findValidatedPlant(parsed.plant_name);
+    if (validatedPlant) {
+      return enrichWithValidatedSources(parsed, validatedPlant);
+    }
+
+    return {
+      ...parsed,
+      has_local_sources: false,
+    };
   } catch (error: any) {
     throw new Error(`OpenAI API error: ${error.message}`);
   }
+};
+
+export const getValidatedPlantsService = () => {
+  return PRIORITY_PLANT_NAMES;
 };
