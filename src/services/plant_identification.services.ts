@@ -6,8 +6,9 @@ import {
 } from "../utils/matchValidatedPlant";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 });
+console.log(" process.env.OPENAI_API_KEY!", process.env.OPENAI_API_KEY!);
 
 const priorityPlants = PRIORITY_PLANT_NAMES;
 
