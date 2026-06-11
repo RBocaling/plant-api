@@ -29,8 +29,17 @@ const support_routes_2 = __importDefault(require("./routes/support.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const upload = (0, multer_1.default)({ dest: "uploads/" });
+const corsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
 app.use((0, body_parser_1.json)());
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)(corsOptions));
+app.options(/.*/, (0, cors_1.default)(corsOptions));
+app.get("/api/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+});
 app.use("/images", express_1.default.static(path_1.default.join(__dirname, "..", "assets", "images")));
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "..", "uploads")));
 app.use("/api/auth", auth_routes_1.default);

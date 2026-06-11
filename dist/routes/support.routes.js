@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const role_middleware_1 = require("../middlewares/role.middleware");
+const support_chat_controllers_1 = require("../controllers/support_chat.controllers");
+const ai_support_chat_controllers_1 = require("../controllers/ai_support_chat.controllers");
+const support_rate_limit_middleware_1 = require("../middlewares/support_rate_limit.middleware");
+const router = (0, express_1.Router)();
+const supportCreateLimiter = (0, support_rate_limit_middleware_1.createSupportRateLimiter)(5, 60 * 1000);
+const supportAiChatLimiter = (0, support_rate_limit_middleware_1.createSupportRateLimiter)(20, 60 * 1000);
+router.post('/create-concern', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), supportCreateLimiter, support_chat_controllers_1.createSupportConcern);
+router.post('/reply-response', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), support_chat_controllers_1.replyToSupport);
+router.get('/get-all-concern', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), support_chat_controllers_1.getAllSupportConcerns);
+router.get('/get-concern/:id', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), support_chat_controllers_1.getSupportConcernById);
+router.post("/ai-chat", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), supportAiChatLimiter, ai_support_chat_controllers_1.postAISupportChat);
+router.get("/ai-chat/history", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), ai_support_chat_controllers_1.getAISupportHistory);
+exports.default = router;

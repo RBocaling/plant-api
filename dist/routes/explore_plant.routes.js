@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const explore_plant_controllers_1 = require("../controllers/explore_plant.controllers");
+const router = (0, express_1.Router)();
+router.post("/", explore_plant_controllers_1.addPlant);
+router.get("/", explore_plant_controllers_1.getPlants);
+router.put("/:id", explore_plant_controllers_1.editPlant);
+router.delete("/:id", explore_plant_controllers_1.removePlant);
+exports.default = router;

@@ -27,10 +27,19 @@ const app = express();
 
 const upload = multer({ dest: "uploads/" });
 
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 app.use(json());
-app.use(
-  cors()
-);
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.use(
   "/images",

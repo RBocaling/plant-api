@@ -1,14 +1,9 @@
-import OpenAI from "openai";
+import { getOpenAIClient } from "../config/openai";
 import { PRIORITY_PLANT_NAMES } from "../data/validatedPlants";
 import {
   enrichWithValidatedSources,
   findValidatedPlant,
 } from "../utils/matchValidatedPlant";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-console.log(" process.env.OPENAI_API_KEY!", process.env.OPENAI_API_KEY!);
 
 const priorityPlants = PRIORITY_PLANT_NAMES;
 
@@ -78,7 +73,7 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
 - End with: "{{plant_name}}, this scan is {{scan_confidence}}% confident. To be sure, you may also search this plant on Google."
 `;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
