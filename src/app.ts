@@ -29,11 +29,7 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(json());
 app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  cors()
 );
 
 app.use(

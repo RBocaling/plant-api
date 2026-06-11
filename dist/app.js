@@ -30,11 +30,7 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const upload = (0, multer_1.default)({ dest: "uploads/" });
 app.use((0, body_parser_1.json)());
-app.use((0, cors_1.default)({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use((0, cors_1.default)());
 app.use("/images", express_1.default.static(path_1.default.join(__dirname, "..", "assets", "images")));
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "..", "uploads")));
 app.use("/api/auth", auth_routes_1.default);
