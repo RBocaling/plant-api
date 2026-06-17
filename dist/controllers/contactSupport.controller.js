@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteContactSupport = exports.getAllContactSupport = exports.replyToContactSupport = exports.insertContactSupport = void 0;
+exports.deleteContactSupport = exports.getMyContactSupport = exports.getAllContactSupport = exports.replyToContactSupport = exports.insertContactSupport = void 0;
 const email_1 = require("../utils/email");
 const prisma_1 = __importDefault(require("../config/prisma"));
 const insertContactSupport = async (req, res) => {
@@ -91,6 +91,41 @@ const getAllContactSupport = async (_req, res) => {
     }
 };
 exports.getAllContactSupport = getAllContactSupport;
+const getMyContactSupport = async (req, res) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+        const user = await prisma_1.default.user.findUnique({
+            where: { id: String(userId) },
+            select: { email: true },
+        });
+        if (!user?.email) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const parent = await prisma_1.default.contactSupportParent.findUnique({
+            where: { email: user.email },
+            include: {
+                contactSupports: {
+                    include: {
+                        contactSupportReplyOwner: {
+                            orderBy: { createdAt: "asc" },
+                        },
+                    },
+                    orderBy: { createdAt: "desc" },
+                },
+            },
+        });
+        return res.status(200).json({
+            messages: parent?.contactSupports ?? [],
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+exports.getMyContactSupport = getMyContactSupport;
 // Delete a single support message (optional)
 const deleteContactSupport = async (req, res) => {
     const { id } = req.params;

@@ -1,7 +1,4 @@
-import { PrismaClient} from "@prisma/client";
-
-const prisma = new PrismaClient();
-
+import prisma from "../config/prisma";
 
 export const submitPlantAdvisory = async (
   plant_name: string,
@@ -29,24 +26,36 @@ export const submitPlantAdvisory = async (
 };
 
 export const makeResponse = async (id: any, response: string) => {
-  const feedback = await prisma.feedback.findUnique({
+  const advisory = await prisma.plantAdvisory.findUnique({
     where: { id },
   });
 
-  if (!feedback) {
+  if (!advisory) {
     throw new Error(`Advisory with ID ${id} not found`);
   }
 
   try {
     const updated = await prisma.plantAdvisory.update({
       where: { id },
-      data: { response, status: 'RESOLVED', },
+      data: { response, status: "RESOLVED" },
     });
 
     return updated;
   } catch (error) {
-    console.error('Service Error - makeResponse:', error);
-    throw new Error('Failed to to make advisory');
+    console.error("Service Error - makeResponse:", error);
+    throw new Error("Failed to make advisory response");
+  }
+};
+
+export const fetchCustomerPlantAdvisories = async (customerId: string) => {
+  try {
+    return await prisma.plantAdvisory.findMany({
+      where: { userId: customerId },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Service Error - fetchCustomerPlantAdvisories:", error);
+    throw new Error("Failed to retrieve your plant advisories");
   }
 };
 

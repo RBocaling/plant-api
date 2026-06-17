@@ -42,9 +42,26 @@ export const getDiseasesAdmin = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
-export const getCategoryAdmin = async (req: Request, res: Response) => {
+export const getCategoryAdmin = async (_req: Request, res: Response) => {
   try {
-    const category = await prisma.diseaseCategory.findMany();
+    let category = await prisma.diseaseCategory.findMany({
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (!category.length) {
+      const defaults = [
+        { diseaseTitle: "Fungal Diseases", image_url: "" },
+        { diseaseTitle: "Bacterial Diseases", image_url: "" },
+        { diseaseTitle: "Viral Diseases", image_url: "" },
+        { diseaseTitle: "Specialized / Rare Diseases", image_url: "" },
+      ];
+
+      await prisma.diseaseCategory.createMany({ data: defaults });
+      category = await prisma.diseaseCategory.findMany({
+        orderBy: { createdAt: "asc" },
+      });
+    }
+
     res.status(200).json(category);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

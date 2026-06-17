@@ -64,6 +64,6 @@ export const enrichWithValidatedSources = (
     },
     special_note:
       aiResponse.special_note ||
-      "This plant is one of Mariecar's shop plants. Information below is validated from Philippine academic and institutional sources.",
+      "This plant is one of Rosemar Garden's shop plants. Information below is validated from Philippine academic and institutional sources.",
   };
 };

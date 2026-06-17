@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSubAdmin = exports.getAllAdmin = exports.archiveUser = exports.editUser = exports.getAllCustomerUsers = exports.userInfo = exports.changePassword = exports.loginUser = exports.registerUser = void 0;
+exports.getAllSubAdmin = exports.getAllAdmin = exports.archiveUser = exports.editUser = exports.getAllCustomerUsers = exports.userInfo = exports.changePassword = exports.loginUser = exports.resendRegistrationOtp = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const prisma_1 = __importDefault(require("../config/prisma"));
 const token_1 = require("../utils/token");
@@ -22,7 +22,7 @@ const registerUser = async (email, password, role, username, firstName, lastName
             lastName,
             profile,
             registerOtp: Number(otp),
-            isRegisteredVerify: true
+            isRegisteredVerify: false,
         },
     });
     if (!user) {
@@ -33,6 +33,23 @@ const registerUser = async (email, password, role, username, firstName, lastName
     return user;
 };
 exports.registerUser = registerUser;
+const resendRegistrationOtp = async (email) => {
+    const user = await prisma_1.default.user.findUnique({ where: { email } });
+    if (!user) {
+        throw new Error("User not found");
+    }
+    if (user.isRegisteredVerify) {
+        throw new Error("Account is already verified");
+    }
+    const otp = (0, generateOtp_1.generateOtp)();
+    await prisma_1.default.user.update({
+        where: { email },
+        data: { registerOtp: Number(otp) },
+    });
+    await (0, email_1.sendVerificationEmail)(email, otp, 50);
+    return { message: "Verification code resent successfully" };
+};
+exports.resendRegistrationOtp = resendRegistrationOtp;
 const loginUser = async (identifier, password) => {
     const user = await prisma_1.default.user.findFirst({
         where: {

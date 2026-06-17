@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAdvisoryPriority = exports.updateAdvisoryStatus = exports.getPlantAdvisoryByIdController = exports.getAllPlantAdvisories = exports.respondToAdvisory = exports.createPlantAdvisory = void 0;
+exports.updateAdvisoryPriority = exports.updateAdvisoryStatus = exports.getPlantAdvisoryByIdController = exports.getAllPlantAdvisories = exports.getMyPlantAdvisories = exports.respondToAdvisory = exports.createPlantAdvisory = void 0;
 const plant_advisory_services_1 = require("../services/plant_advisory.services");
 const logs_1 = require("../utils/logs");
 const createPlantAdvisory = async (req, res) => {
@@ -54,6 +54,24 @@ const respondToAdvisory = async (req, res) => {
     }
 };
 exports.respondToAdvisory = respondToAdvisory;
+const getMyPlantAdvisories = async (req, res) => {
+    try {
+        const customerId = req.user?.id;
+        if (!customerId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const advisories = await (0, plant_advisory_services_1.fetchCustomerPlantAdvisories)(String(customerId));
+        return res.status(200).json({
+            message: "Your plant advisories retrieved.",
+            data: advisories,
+        });
+    }
+    catch (error) {
+        console.error("Controller Error - getMyPlantAdvisories:", error);
+        return res.status(500).json({ error: "Failed to fetch your advisories." });
+    }
+};
+exports.getMyPlantAdvisories = getMyPlantAdvisories;
 const getAllPlantAdvisories = async (_req, res) => {
     try {
         const advisories = await (0, plant_advisory_services_1.fetchAllPlantAdvisories)();

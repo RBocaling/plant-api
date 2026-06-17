@@ -99,6 +99,45 @@ export const getAllContactSupport = async (_req: Request, res: Response) => {
   }
 };
 
+export const getMyContactSupport = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: String(userId) },
+      select: { email: true },
+    });
+
+    if (!user?.email) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const parent = await prisma.contactSupportParent.findUnique({
+      where: { email: user.email },
+      include: {
+        contactSupports: {
+          include: {
+            contactSupportReplyOwner: {
+              orderBy: { createdAt: "asc" },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      messages: parent?.contactSupports ?? [],
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Delete a single support message (optional)
 export const deleteContactSupport = async (req: Request, res: Response) => {
   const { id } = req.params;

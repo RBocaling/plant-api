@@ -61,7 +61,7 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
 
 ### Special Note:
 - If plant is in priority list [${priorityPlants.join(", ")}], add:
-  "special_note": "This plant is one of Mariecar's shop plants. If you want to buy, visit her shop."
+  "special_note": "This plant is one of Rosemar Garden's shop plants. If you want to buy, visit her shop."
 
 ### Summary guidance (for successful scans):
 - Start with "Welcome user, this is the result of your scan."

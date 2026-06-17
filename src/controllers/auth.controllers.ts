@@ -11,6 +11,7 @@ import {
   archiveUser,
   getAllAdmin,
   getAllSubAdmin,
+  resendRegistrationOtp,
 } from "../services/auth.services";
 import {
   generateAccessToken,
@@ -309,7 +310,7 @@ export const verifyAccountOtp = async (req: Request, res: Response) => {
         registerOtp: null,
       },
     });
-    if (!updateUser || !user?.id) {
+    if (!updatedUser || !user?.id) {
       throw new Error("user not found");
     }
 
@@ -327,6 +328,21 @@ export const verifyAccountOtp = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ error: error.message || "Something went wrong" });
+  }
+};
+
+export const resendVerifyOtp = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const result = await resendRegistrationOtp(email);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    return res.status(400).json({ error: error.message || "Failed to resend OTP" });
   }
 };
 

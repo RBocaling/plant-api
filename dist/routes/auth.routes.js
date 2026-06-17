@@ -17,6 +17,7 @@ router.post("/change-password", auth_middleware_1.authenticateToken, (0, role_mi
 router.post("/edit-user", auth_middleware_1.authenticateToken, auth_controllers_1.updateUser);
 router.post("/delete-user/:id", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("ADMIN"), auth_controllers_1.removeUser);
 router.post("/verify-account", auth_controllers_1.verifyAccountOtp);
+router.post("/resend-verify-otp", auth_controllers_1.resendVerifyOtp);
 router.post("/delete-account", auth_controllers_1.deleteAccount);
 router.put("/update-role", auth_controllers_1.updateRole);
 exports.default = router;

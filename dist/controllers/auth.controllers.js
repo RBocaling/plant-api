@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRole = exports.deleteAccount = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.getInfo = exports.refreshAccessToken = exports.login = exports.register = void 0;
+exports.updateRole = exports.deleteAccount = exports.resendVerifyOtp = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.getInfo = exports.refreshAccessToken = exports.login = exports.register = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const auth_services_1 = require("../services/auth.services");
 const token_1 = require("../utils/token");
@@ -250,7 +250,7 @@ const verifyAccountOtp = async (req, res) => {
                 registerOtp: null,
             },
         });
-        if (!exports.updateUser || !user?.id) {
+        if (!updatedUser || !user?.id) {
             throw new Error("user not found");
         }
         await (0, notif_services_1.createNotification)(user?.id, `Welcome ${user?.firstName}! 🎉`, "Your account has been verified. You can now log in and start using Thryve.");
@@ -266,6 +266,20 @@ const verifyAccountOtp = async (req, res) => {
     }
 };
 exports.verifyAccountOtp = verifyAccountOtp;
+const resendVerifyOtp = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+    }
+    try {
+        const result = await (0, auth_services_1.resendRegistrationOtp)(email);
+        return res.status(200).json(result);
+    }
+    catch (error) {
+        return res.status(400).json({ error: error.message || "Failed to resend OTP" });
+    }
+};
+exports.resendVerifyOtp = resendVerifyOtp;
 const deleteAccount = async (req, res) => {
     const { email } = req.body;
     try {

@@ -6,6 +6,7 @@ const role_middleware_1 = require("../middlewares/role.middleware");
 const plant_advisory_controllers_1 = require("../controllers/plant_advisory.controllers");
 const router = (0, express_1.Router)();
 router.post('/create-advisory', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), plant_advisory_controllers_1.createPlantAdvisory);
+router.get('/my-advisory', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), plant_advisory_controllers_1.getMyPlantAdvisories);
 router.get('/get-all-advisory', auth_middleware_1.authenticateToken, plant_advisory_controllers_1.getAllPlantAdvisories);
 router.get('/get-advisory/:id', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), plant_advisory_controllers_1.getPlantAdvisoryByIdController);
 router.post('/update-status', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("SPECIALIST"), plant_advisory_controllers_1.updateAdvisoryStatus);

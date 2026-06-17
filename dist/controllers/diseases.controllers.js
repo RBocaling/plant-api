@@ -45,9 +45,23 @@ const getDiseasesAdmin = async (req, res) => {
     }
 };
 exports.getDiseasesAdmin = getDiseasesAdmin;
-const getCategoryAdmin = async (req, res) => {
+const getCategoryAdmin = async (_req, res) => {
     try {
-        const category = await prisma_1.default.diseaseCategory.findMany();
+        let category = await prisma_1.default.diseaseCategory.findMany({
+            orderBy: { createdAt: "asc" },
+        });
+        if (!category.length) {
+            const defaults = [
+                { diseaseTitle: "Fungal Diseases", image_url: "" },
+                { diseaseTitle: "Bacterial Diseases", image_url: "" },
+                { diseaseTitle: "Viral Diseases", image_url: "" },
+                { diseaseTitle: "Specialized / Rare Diseases", image_url: "" },
+            ];
+            await prisma_1.default.diseaseCategory.createMany({ data: defaults });
+            category = await prisma_1.default.diseaseCategory.findMany({
+                orderBy: { createdAt: "asc" },
+            });
+        }
         res.status(200).json(category);
     }
     catch (error) {

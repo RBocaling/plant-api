@@ -6,6 +6,7 @@ import {
   updatePlantAdvisoryStatus,
   updatePlantAdvisoryPriority,
   makeResponse,
+  fetchCustomerPlantAdvisories,
 } from '../services/plant_advisory.services';
 import { logActivity } from '../utils/logs';
 
@@ -71,6 +72,25 @@ export const respondToAdvisory = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Controller Error - respondAdvisory:', error);
     return res.status(500).json({ error: error.message || 'Failed to respond to advisory.' });
+  }
+};
+
+export const getMyPlantAdvisories = async (req: Request, res: Response) => {
+  try {
+    const customerId = req.user?.id;
+
+    if (!customerId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const advisories = await fetchCustomerPlantAdvisories(String(customerId));
+    return res.status(200).json({
+      message: "Your plant advisories retrieved.",
+      data: advisories,
+    });
+  } catch (error) {
+    console.error("Controller Error - getMyPlantAdvisories:", error);
+    return res.status(500).json({ error: "Failed to fetch your advisories." });
   }
 };
 

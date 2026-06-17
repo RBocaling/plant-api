@@ -11,6 +11,7 @@ import {
   fetchAllSubAdmin,
   removeUser,
   verifyAccountOtp,
+  resendVerifyOtp,
   deleteAccount,
   updateRole,
 } from "../controllers/auth.controllers";
@@ -41,6 +42,7 @@ router.post(
   removeUser as any
 );
 router.post("/verify-account", verifyAccountOtp as any);
+router.post("/resend-verify-otp", resendVerifyOtp as any);
 router.post("/delete-account", deleteAccount as any);
 router.put("/update-role", updateRole as any);
 

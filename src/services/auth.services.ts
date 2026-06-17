@@ -25,7 +25,7 @@ export const registerUser = async (
       lastName,
       profile,
       registerOtp: Number(otp),
-      isRegisteredVerify: true
+      isRegisteredVerify: false,
     },
   });
 
@@ -38,6 +38,27 @@ export const registerUser = async (
   console.log("send", send);
 
   return user;
+};
+
+export const resendRegistrationOtp = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.isRegisteredVerify) {
+    throw new Error("Account is already verified");
+  }
+
+  const otp = generateOtp();
+  await prisma.user.update({
+    where: { email },
+    data: { registerOtp: Number(otp) },
+  });
+
+  await sendVerificationEmail(email, otp, 50);
+  return { message: "Verification code resent successfully" };
 };
 
 export const loginUser = async (identifier: string, password: string) => {

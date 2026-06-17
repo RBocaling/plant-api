@@ -2,8 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const contactSupport_controller_1 = require("../controllers/contactSupport.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const role_middleware_1 = require("../middlewares/role.middleware");
 const router = (0, express_1.Router)();
 router.post("/", contactSupport_controller_1.insertContactSupport);
-router.post("/reply", contactSupport_controller_1.replyToContactSupport);
+router.post("/reply", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER", "ADMIN"), contactSupport_controller_1.replyToContactSupport);
+router.get("/my-messages", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), contactSupport_controller_1.getMyContactSupport);
 router.get("/", contactSupport_controller_1.getAllContactSupport);
 exports.default = router;

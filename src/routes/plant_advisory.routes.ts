@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { authenticateToken } from "../middlewares/auth.middleware";
 import { Roles } from "../middlewares/role.middleware";
-import { createPlantAdvisory, getAllPlantAdvisories, getPlantAdvisoryByIdController, updateAdvisoryStatus, updateAdvisoryPriority, respondToAdvisory } from "../controllers/plant_advisory.controllers";
+import { createPlantAdvisory, getAllPlantAdvisories, getMyPlantAdvisories, getPlantAdvisoryByIdController, updateAdvisoryStatus, updateAdvisoryPriority, respondToAdvisory } from "../controllers/plant_advisory.controllers";
 
 const router = Router();
 
 router.post('/create-advisory', authenticateToken, Roles("CUSTOMER"),  createPlantAdvisory as any);
+router.get('/my-advisory', authenticateToken, Roles("CUSTOMER"), getMyPlantAdvisories as any);
 router.get('/get-all-advisory', authenticateToken,  getAllPlantAdvisories as any);
 router.get('/get-advisory/:id', authenticateToken, Roles("SPECIALIST"),  getPlantAdvisoryByIdController as any);
 router.post('/update-status', authenticateToken, Roles("SPECIALIST"), updateAdvisoryStatus as any);
