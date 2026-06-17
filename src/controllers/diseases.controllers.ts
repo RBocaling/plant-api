@@ -1,6 +1,17 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 
+const pickDiseaseFields = (body: Record<string, any>) => ({
+  disease: body.disease,
+  image: typeof body.image === "string" && body.image.startsWith("data:")
+    ? undefined
+    : body.image,
+  causedBy: body.causedBy,
+  mainSymptoms: body.mainSymptoms,
+  preventionControl: body.preventionControl ?? body.preventionAndControl,
+  categoryId: body.categoryId,
+});
+
 export const getAllDiseaseCategories = async (req: Request, res: Response) => {
   try {
     const categories = await prisma.diseaseCategory.findMany({
@@ -83,23 +94,14 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const createDisease = async (req: Request, res: Response) => {
   try {
-    const {
-      disease,
-      image,
-      causedBy,
-      mainSymptoms,
-      preventionControl,
-      categoryId,
-    } = req.body;
+    const data = pickDiseaseFields(req.body);
+
+    if (!data.disease || !data.image || !data.categoryId) {
+      return res.status(400).json({ message: "Missing required disease fields." });
+    }
+
     const newDisease = await prisma.disease.create({
-      data: {
-        disease,
-        image,
-        causedBy,
-        mainSymptoms,
-        preventionControl,
-        categoryId,
-      },
+      data: data as any,
     });
     res.json(newDisease);
   } catch (error: any) {
@@ -111,12 +113,25 @@ export const createDisease = async (req: Request, res: Response) => {
 export const updateDisease = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const data = pickDiseaseFields(req.body);
+
+    const payload = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
+    );
+
+    if (!Object.keys(payload).length) {
+      return res.status(400).json({ message: "No valid fields to update." });
+    }
+
     const updated = await prisma.disease.update({
       where: { id },
-      data: req.body,
+      data: payload,
     });
     res.json(updated);
   } catch (error: any) {
+    if (error?.code === "P2025") {
+      return res.status(404).json({ message: "Disease not found." });
+    }
     res.status(500).json({ message: error.message });
   }
 };

@@ -34,7 +34,7 @@ const corsOptions = {
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 };
-app.use((0, body_parser_1.json)());
+app.use((0, body_parser_1.json)({ limit: "10mb" }));
 app.use((0, cors_1.default)(corsOptions));
 app.options(/.*/, (0, cors_1.default)(corsOptions));
 app.get("/api/health", (_req, res) => {

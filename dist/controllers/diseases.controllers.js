@@ -5,6 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteDiseaseCategory = exports.deleteDisease = exports.updateDisease = exports.createDisease = exports.createCategory = exports.getCategoryAdmin = exports.getDiseasesAdmin = exports.getAllDiseaseCategories = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
+const pickDiseaseFields = (body) => ({
+    disease: body.disease,
+    image: typeof body.image === "string" && body.image.startsWith("data:")
+        ? undefined
+        : body.image,
+    causedBy: body.causedBy,
+    mainSymptoms: body.mainSymptoms,
+    preventionControl: body.preventionControl ?? body.preventionAndControl,
+    categoryId: body.categoryId,
+});
 const getAllDiseaseCategories = async (req, res) => {
     try {
         const categories = await prisma_1.default.diseaseCategory.findMany({
@@ -84,16 +94,12 @@ const createCategory = async (req, res) => {
 exports.createCategory = createCategory;
 const createDisease = async (req, res) => {
     try {
-        const { disease, image, causedBy, mainSymptoms, preventionControl, categoryId, } = req.body;
+        const data = pickDiseaseFields(req.body);
+        if (!data.disease || !data.image || !data.categoryId) {
+            return res.status(400).json({ message: "Missing required disease fields." });
+        }
         const newDisease = await prisma_1.default.disease.create({
-            data: {
-                disease,
-                image,
-                causedBy,
-                mainSymptoms,
-                preventionControl,
-                categoryId,
-            },
+            data: data,
         });
         res.json(newDisease);
     }
@@ -105,13 +111,21 @@ exports.createDisease = createDisease;
 const updateDisease = async (req, res) => {
     try {
         const { id } = req.params;
+        const data = pickDiseaseFields(req.body);
+        const payload = Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
+        if (!Object.keys(payload).length) {
+            return res.status(400).json({ message: "No valid fields to update." });
+        }
         const updated = await prisma_1.default.disease.update({
             where: { id },
-            data: req.body,
+            data: payload,
         });
         res.json(updated);
     }
     catch (error) {
+        if (error?.code === "P2025") {
+            return res.status(404).json({ message: "Disease not found." });
+        }
         res.status(500).json({ message: error.message });
     }
 };

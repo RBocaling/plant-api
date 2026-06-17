@@ -50,6 +50,9 @@ const respondToAdvisory = async (req, res) => {
     }
     catch (error) {
         console.error('Controller Error - respondAdvisory:', error);
+        if (error?.message?.includes('not found')) {
+            return res.status(404).json({ error: error.message });
+        }
         return res.status(500).json({ error: error.message || 'Failed to respond to advisory.' });
     }
 };

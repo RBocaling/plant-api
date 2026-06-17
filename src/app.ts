@@ -33,7 +33,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-app.use(json());
+app.use(json({ limit: "10mb" }));
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
