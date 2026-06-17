@@ -77,26 +77,30 @@ const editPlant = async (req, res) => {
     try {
         const id = req.params.id;
         const { commonName, scientificName, description, funFact, ims_url, plantSizes, type, } = req.body;
-        const updatedPlant = await prisma.explorePlant.update({
-            where: { id },
-            data: {
-                commonName,
-                scientificName,
-                description,
-                funFact,
-                ims_url,
-                type,
-                plantSizes: plantSizes
-                    ? {
-                        upsert: plantSizes.map((size) => ({
-                            where: { id: size.id ?? 0 }, // if no id, will create
-                            update: { size: size.size, price: size.price },
-                            create: { size: size.size, price: size.price },
+        const sizes = Array.isArray(plantSizes) ? plantSizes : [];
+        const updatedPlant = await prisma.$transaction(async (tx) => {
+            // Replace sizes entirely so removed entries are actually deleted.
+            await tx.plantSizes.deleteMany({
+                where: { explorePlantId: id },
+            });
+            return tx.explorePlant.update({
+                where: { id },
+                data: {
+                    commonName,
+                    scientificName,
+                    description,
+                    funFact,
+                    ims_url,
+                    type,
+                    plantSizes: {
+                        create: sizes.map((size) => ({
+                            size: size.size,
+                            price: String(size.price),
                         })),
-                    }
-                    : undefined,
-            },
-            include: { plantSizes: true },
+                    },
+                },
+                include: { plantSizes: true },
+            });
         });
         res.status(200).json(updatedPlant);
     }
