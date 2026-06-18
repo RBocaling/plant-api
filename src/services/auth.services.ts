@@ -144,7 +144,7 @@ export const loginUser = async (
 
   if (client === "mobile" && isStaff) {
     throw new Error(
-      "Staff accounts must sign in through the admin dashboard, not the mobile app."
+      "Staff accounts must sign in through the admin website, not the mobile app."
     );
   }
 

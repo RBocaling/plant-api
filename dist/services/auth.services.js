@@ -102,7 +102,7 @@ const loginUser = async (identifier, password, client = "mobile") => {
         throw new Error("This account cannot access the admin dashboard. Please use the mobile app.");
     }
     if (client === "mobile" && isStaff) {
-        throw new Error("Staff accounts must sign in through the admin dashboard, not the mobile app.");
+        throw new Error("Staff accounts must sign in through the admin website, not the mobile app.");
     }
     return {
         accessToken: (0, token_1.generateAccessToken)(user.id, user.role),

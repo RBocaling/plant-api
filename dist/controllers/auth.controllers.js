@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRole = exports.deleteAccount = exports.resendVerifyOtp = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.getInfo = exports.refreshAccessToken = exports.login = exports.createAdminAccount = exports.register = void 0;
+exports.updateRole = exports.deleteAccount = exports.resendVerifyOtp = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.getInfo = exports.refreshAccessToken = exports.adminLogin = exports.login = exports.createAdminAccount = exports.register = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const auth_services_1 = require("../services/auth.services");
 const token_1 = require("../utils/token");
@@ -124,10 +124,9 @@ const createAdminAccount = async (req, res) => {
 };
 exports.createAdminAccount = createAdminAccount;
 const login = async (req, res) => {
-    const { identifier, password, client } = req.body;
-    const clientType = client === "admin" ? "admin" : "mobile";
+    const { identifier, password } = req.body;
     try {
-        const { accessToken, refreshToken, user } = await (0, auth_services_1.loginUser)(identifier, password, clientType);
+        const { accessToken, refreshToken, user } = await (0, auth_services_1.loginUser)(identifier, password, "mobile");
         await (0, logs_1.logActivity)({ userId: user.id, activity: "User logged in" });
         res.status(201).json({
             accessToken,
@@ -139,6 +138,21 @@ const login = async (req, res) => {
     }
 };
 exports.login = login;
+const adminLogin = async (req, res) => {
+    const { identifier, password } = req.body;
+    try {
+        const { accessToken, refreshToken, user } = await (0, auth_services_1.loginUser)(identifier, password, "admin");
+        await (0, logs_1.logActivity)({ userId: user.id, activity: "User logged in" });
+        res.status(201).json({
+            accessToken,
+            refreshToken,
+        });
+    }
+    catch (error) {
+        res.status(401).json({ message: error.message });
+    }
+};
+exports.adminLogin = adminLogin;
 const refreshAccessToken = async (req, res) => {
     const { refreshToken } = req.body;
     if (!refreshToken) {

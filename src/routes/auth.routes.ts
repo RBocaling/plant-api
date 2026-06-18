@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getInfo,
   login,
+  adminLogin,
   refreshAccessToken,
   register,
   updatePassword,
@@ -30,6 +31,7 @@ router.post(
   createAdminAccount as any
 );
 router.post("/login", login);
+router.post("/admin-login", adminLogin as any);
 router.post("/refresh-token", refreshAccessToken as any);
 router.get("/get-info", authenticateToken, getInfo as any);
 router.get("/get-users-list", authenticateToken, Roles("OWNER", "ADMIN"), fetchAllCustomerUsers as any);

@@ -189,14 +189,34 @@ export const createAdminAccount = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { identifier, password, client } = req.body;
-  const clientType = client === "admin" ? "admin" : "mobile";
+  const { identifier, password } = req.body;
 
   try {
     const { accessToken, refreshToken, user } = await loginUser(
       identifier,
       password,
-      clientType
+      "mobile"
+    );
+
+    await logActivity({ userId: user.id, activity: "User logged in" });
+
+    res.status(201).json({
+      accessToken,
+      refreshToken,
+    });
+  } catch (error: any) {
+    res.status(401).json({ message: error.message });
+  }
+};
+
+export const adminLogin = async (req: Request, res: Response) => {
+  const { identifier, password } = req.body;
+
+  try {
+    const { accessToken, refreshToken, user } = await loginUser(
+      identifier,
+      password,
+      "admin"
     );
 
     await logActivity({ userId: user.id, activity: "User logged in" });
