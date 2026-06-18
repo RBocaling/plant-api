@@ -21,6 +21,7 @@ import plantRoutes from "./routes/plant_identification.routes";
 import explorePlantRoutes from "./routes/explore_plant.routes";
 import contactSupportRoutes from "./routes/contactSupport.routes";
 import supportRoutes from "./routes/support.routes";
+import systemSettingsRoutes from "./routes/systemSettings.routes";
 dotenv.config();
 
 const app = express();
@@ -63,6 +64,7 @@ app.use("/api/plant-identification", plantRoutes);
 app.use("/api/explore-plant", explorePlantRoutes);
 app.use("/api/contact-support", contactSupportRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/settings", systemSettingsRoutes);
 app.use("/api/diseases", diseases);
 
 export default app;

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const systemSettings_controllers_1 = require("../controllers/systemSettings.controllers");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const role_middleware_1 = require("../middlewares/role.middleware");
+const router = (0, express_1.Router)();
+router.get("/public", systemSettings_controllers_1.getPublicSettings);
+router.get("/reports-export-check", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER", "ADMIN"), systemSettings_controllers_1.checkReportsExport);
+router.get("/", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER"), systemSettings_controllers_1.getAdminSettings);
+router.patch("/", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER"), systemSettings_controllers_1.patchAdminSettings);
+exports.default = router;

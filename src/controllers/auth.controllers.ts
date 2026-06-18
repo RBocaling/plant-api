@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from '../config/prisma';
 import {
   registerUser,
+  registerAdminUser,
   loginUser,
   // uploadDocuments,
   userInfo,
@@ -97,6 +98,91 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+export const createAdminAccount = async (req: Request, res: Response) => {
+  const {
+    email,
+    password,
+    confirmPassword,
+    role,
+    username,
+    firstName,
+    lastName,
+    profile,
+  } = req.body;
+
+  const allowedRoles = ["ADMIN", "OWNER", "SPECIALIST"];
+  const normalizedRole = String(role || "").toUpperCase();
+
+  if (!allowedRoles.includes(normalizedRole)) {
+    return res.status(400).json({
+      message: "Role must be ADMIN, OWNER, or SPECIALIST",
+    });
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return res.status(400).json({ message: "Email is already in use" });
+  }
+
+  const existingUsername = await prisma.user.findUnique({ where: { username } });
+  if (existingUsername) {
+    return res.status(400).json({ message: "Username is already in use" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+
+  const passwordErrors = [];
+  if (password.length < 8) {
+    passwordErrors.push("Password must be at least 8 characters long");
+  }
+  if (!/[A-Z]/.test(password)) {
+    passwordErrors.push("Password must include an uppercase letter");
+  }
+  if (!/[a-z]/.test(password)) {
+    passwordErrors.push("Password must include a lowercase letter");
+  }
+  if (!/[0-9]/.test(password)) {
+    passwordErrors.push("Password must include a number");
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    passwordErrors.push("Password must include a special character");
+  }
+
+  if (passwordErrors.length > 0) {
+    return res.status(400).json({ message: passwordErrors });
+  }
+
+  if (!email || !password || !confirmPassword || !username || !firstName || !lastName) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const user = await registerAdminUser(
+      email,
+      password,
+      normalizedRole as "ADMIN" | "OWNER" | "SPECIALIST",
+      username,
+      firstName,
+      lastName,
+      profile
+    );
+
+    await logActivity({
+      userId: req.user?.id,
+      activity: `Created staff account for ${email} (${normalizedRole})`,
+    });
+
+    res.status(201).json({
+      message: "Account created successfully",
+      data: user,
+    });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message || "Failed to create account" });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   const { identifier, password } = req.body;
 
@@ -179,7 +265,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const { id, email, username, firstName, lastName, profile } = req.body;
+  const { id, email, username, firstName, lastName, profile, role } = req.body;
 
   if (!id) {
     return res.status(400).json({ message: "A valid user ID is required" });
@@ -201,6 +287,9 @@ export const updateUser = async (req: Request, res: Response) => {
       firstName,
       lastName,
       profile,
+      role: role
+        ? (String(role).toUpperCase() as "ADMIN" | "OWNER" | "SPECIALIST" | "CUSTOMER")
+        : undefined,
     });
 
     await logActivity({ userId:id, activity: "Edited user profile" });
@@ -220,12 +309,11 @@ export const removeUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const userId = parseInt(id, 10);
-    if (isNaN(userId)) {
+    if (!id) {
       return res.status(400).json({ error: "Invalid user ID" });
     }
 
-    const result = await archiveUser(userId);
+    const result = await archiveUser(id);
 
     await logActivity({
       userId: req.user?.id,

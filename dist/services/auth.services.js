@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSubAdmin = exports.getAllAdmin = exports.archiveUser = exports.editUser = exports.getAllCustomerUsers = exports.userInfo = exports.changePassword = exports.loginUser = exports.resendRegistrationOtp = exports.registerUser = void 0;
+exports.getAllSubAdmin = exports.getAllAdmin = exports.archiveUser = exports.editUser = exports.getAllCustomerUsers = exports.userInfo = exports.changePassword = exports.loginUser = exports.resendRegistrationOtp = exports.registerAdminUser = exports.registerUser = void 0;
 const argon2_1 = __importDefault(require("argon2"));
 const prisma_1 = __importDefault(require("../config/prisma"));
 const token_1 = require("../utils/token");
@@ -33,6 +33,27 @@ const registerUser = async (email, password, role, username, firstName, lastName
     return user;
 };
 exports.registerUser = registerUser;
+const registerAdminUser = async (email, password, role, username, firstName, lastName, profile) => {
+    const hashedPassword = await argon2_1.default.hash(password);
+    const user = await prisma_1.default.user.create({
+        data: {
+            email,
+            password: hashedPassword,
+            role,
+            username,
+            firstName,
+            lastName,
+            profile,
+            isRegisteredVerify: true,
+            registerOtp: null,
+        },
+    });
+    if (!user) {
+        throw new Error("User register failed");
+    }
+    return user;
+};
+exports.registerAdminUser = registerAdminUser;
 const resendRegistrationOtp = async (email) => {
     const user = await prisma_1.default.user.findUnique({ where: { email } });
     if (!user) {
@@ -92,6 +113,10 @@ const changePassword = async (userId, currentPassword, newPassword, confirmNewPa
     }
     if (newPassword !== confirmNewPassword) {
         throw new Error("New password and confirm password do not match");
+    }
+    const isSamePassword = await argon2_1.default.verify(user.password, newPassword);
+    if (isSamePassword) {
+        throw new Error("New password must be different from your current password");
     }
     const newHashedPassword = await argon2_1.default.hash(newPassword);
     await prisma_1.default.user.update({
@@ -171,6 +196,7 @@ const editUser = async (userId, updates) => {
             username: true,
             firstName: true,
             lastName: true,
+            role: true,
         },
     });
     return updated;
@@ -183,8 +209,8 @@ const archiveUser = async (userId) => {
     if (!user) {
         throw new Error(`User with ID ${userId} not found`);
     }
-    if (user.role !== 'CUSTOMER') {
-        throw new Error(`Only users with the role 'CUSTOMER' can be archived`);
+    if (user.role !== "CUSTOMER" && user.role !== "ADMIN" && user.role !== "OWNER" && user.role !== "SPECIALIST") {
+        throw new Error(`This user cannot be archived`);
     }
     const archivedUser = await prisma_1.default.user.update({
         where: { id: userId },

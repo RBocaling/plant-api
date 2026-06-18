@@ -10,7 +10,7 @@ const generateOtp_1 = require("../utils/generateOtp");
 const createHistoryController = async (req, res) => {
     try {
         const userId = req.user?.id;
-        const { plant_name, img_url, species, description, demand_philippines, scan_confidence, identified_disease, health_status, health_category, healthy, care_instructions, isOriginal, special_note, summary, } = req.body;
+        const { plant_name, img_url, species, description, demand_philippines, scan_confidence, identified_disease, health_status, health_category, healthy, care_instructions, isOriginal, special_note, summary, authenticity_confidence, } = req.body;
         if (!plant_name) {
             return res
                 .status(400)
@@ -38,6 +38,7 @@ const createHistoryController = async (req, res) => {
                 isOriginal,
                 special_note,
                 summary,
+                authenticity_confidence: authenticity_confidence?.toString(),
                 userId: userId?.toString(),
             },
         });

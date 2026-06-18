@@ -39,6 +39,16 @@ export const verifyOTP = async (email: string, otp: string) => {
 };
 
 export const resetPassword = async (email: string, newPassword: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isSamePassword = await argon2.verify(user.password, newPassword);
+  if (isSamePassword) {
+    throw new Error("New password must be different from your current password");
+  }
+
   const hashedPassword = await argon2.hash(newPassword);
   await prisma.user.update({
     where: { email },

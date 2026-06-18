@@ -2,8 +2,31 @@ import { Request, Response } from "express";
 import { sendEmail } from "../utils/email";
 import prisma from "../config/prisma";
 
+const URGENCY_HOURS: Record<string, number> = {
+  low: 48,
+  medium: 24,
+  high: 12,
+  urgent: 4,
+};
+
+const VALID_URGENCIES = Object.keys(URGENCY_HOURS);
+
 export const insertContactSupport = async (req: Request, res: Response) => {
-  const { name, email, subject, message } = req.body;
+  const { name, email, subject, message, urgency = "medium" } = req.body;
+
+  if (!name?.trim() || !email?.trim() || !subject?.trim() || !message?.trim()) {
+    return res.status(400).json({
+      error: "Name, email, subject, and message are required.",
+    });
+  }
+
+  if (!VALID_URGENCIES.includes(urgency)) {
+    return res.status(400).json({
+      error: "Invalid urgency level. Choose low, medium, high, or urgent.",
+    });
+  }
+
+  const expectedResponseHours = URGENCY_HOURS[urgency];
 
   try {
     let parent = await prisma.contactSupportParent.findUnique({
@@ -15,9 +38,11 @@ export const insertContactSupport = async (req: Request, res: Response) => {
 
     const contact = await prisma.contactSupport.create({
       data: {
-        name,
-        subject,
-        message,
+        name: name.trim(),
+        subject: subject.trim(),
+        message: message.trim(),
+        urgency,
+        expectedResponseHours,
         parentId: parent.id,
       },
       include: { contactSupportReplyOwner: true },
@@ -25,6 +50,8 @@ export const insertContactSupport = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Support request submitted successfully",
+      acknowledgement: `Your concern has been received. Our support team will review it and respond soon. Expected owner response within ${expectedResponseHours} hour${expectedResponseHours === 1 ? "" : "s"}.`,
+      expectedResponseHours,
       contact,
     });
   } catch (error: any) {

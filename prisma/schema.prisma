@@ -7,9 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/* =====================
-   ENUMS (NO CHANGE)
-   ===================== */
 enum UserRole {
   CUSTOMER
   ADMIN
@@ -53,10 +50,6 @@ enum SupportStatus {
   RESOLVED
   CLOSED
 }
-
-/* =====================
-   USER & AUTH
-   ===================== */
 model User {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   email              String   @unique
@@ -89,10 +82,6 @@ model OTP {
   expiresAt DateTime
 }
 
-
-/* =====================
-   SUPPORT / NOTIF
-   ===================== */
 model Support {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   concern_msg  String
@@ -106,7 +95,6 @@ model Support {
   customer     User     @relation(fields: [customerId], references: [id])
   createdAt    DateTime @default(now())
 }
-
 model notif {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -116,10 +104,6 @@ model notif {
   userId      String   @db.ObjectId
   user        User     @relation("UserNotifications", fields: [userId], references: [id])
 }
-
-/* =====================
-   HISTORY / LOGS
-   ===================== */
 model History {
   id                       String   @id @default(auto()) @map("_id") @db.ObjectId
   plant_id                 String
@@ -156,9 +140,6 @@ model ActivityLog {
   timestamp DateTime @default(now())
 }
 
-/* =====================
-   ADVISORY / FEEDBACK
-   ===================== */
 model PlantAdvisory {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   plant_name  String
@@ -186,9 +167,6 @@ model Feedback {
   createdAt   DateTime @default(now())
 }
 
-/* =====================
-   PLANTS
-   ===================== */
 model PlantCategory {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
@@ -233,9 +211,6 @@ model PlantGallery {
   plant     PlantInfo @relation(fields: [plantId], references: [id])
 }
 
-/* =====================
-   EXPLORE PLANT
-   ===================== */
 model ExplorePlant {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   commonName     String
@@ -256,10 +231,6 @@ model PlantSizes {
   explorePlantId String   @db.ObjectId
   plant          ExplorePlant @relation(fields: [explorePlantId], references: [id])
 }
-
-/* =====================
-   CONTACT SUPPORT
-   ===================== */
 model ContactSupportParent {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
@@ -274,6 +245,9 @@ model ContactSupport {
   subject   String
   message   String
   createdAt DateTime @default(now())
+
+  urgency               String   @default("medium")
+  expectedResponseHours Int      @default(24)
 
   parentId  String   @db.ObjectId
   parent    ContactSupportParent @relation(fields: [parentId], references: [id])
@@ -301,10 +275,6 @@ model AISupportChat {
 
   createdAt DateTime @default(now())
 }
-
-/* =====================
-   DISEASE
-   ===================== */
 model DiseaseCategory {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   diseaseTitle String
@@ -329,4 +299,11 @@ model Disease {
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+model SystemSettings {
+  id               String   @id @map("_id")
+  reportsEnabled   Boolean  @default(true)
+  feedbackEnabled  Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
 }

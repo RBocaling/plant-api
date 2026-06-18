@@ -8,6 +8,6 @@ const router = (0, express_1.Router)();
 router.post('/create-feedback', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), feedback_controllers_1.createFeedback);
 router.post('/make-response', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER"), feedback_controllers_1.respondToFeedback);
 router.post('/update-status', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER"), feedback_controllers_1.updateFeedbackStatus);
-router.get("/get-feedback", feedback_controllers_1.getAllFeedbacks);
+router.get("/get-feedback", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER", "ADMIN"), feedback_controllers_1.getAllFeedbacks);
 router.get('/get-feedback-byuser', auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), feedback_controllers_1.getFeedbackForUser);
 exports.default = router;

@@ -21,6 +21,7 @@ export const createHistoryController = async (req: Request, res: Response) => {
       isOriginal,
       special_note,
       summary,
+      authenticity_confidence,
     } = req.body;
 
     if (!plant_name) {
@@ -52,6 +53,7 @@ export const createHistoryController = async (req: Request, res: Response) => {
         isOriginal,
         special_note,
         summary,
+        authenticity_confidence: authenticity_confidence?.toString(),
         userId: userId?.toString(),
       },
     });

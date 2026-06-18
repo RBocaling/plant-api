@@ -9,6 +9,7 @@ import {
 } from '../services/feedback.services';
 import { logActivity } from '../utils/logs';
 import { createNotification } from "../services/notif.services";
+import { isFeedbackEnabled } from "../services/systemSettings.services";
 
 export const createFeedback = async (req: Request, res: Response) => {
   console.log("BODY:", req.body);
@@ -22,6 +23,13 @@ export const createFeedback = async (req: Request, res: Response) => {
 
     if (typeof rating !== "number" || rating < 1 || rating > 5) {
       return res.status(400).json({ error: "Rating must be between 1 and 5." });
+    }
+
+    const feedbackEnabled = await isFeedbackEnabled();
+    if (!feedbackEnabled) {
+      return res.status(403).json({
+        error: "Feedback submissions are currently disabled. Please try again later.",
+      });
     }
 
     const feedback = await submitFeedback(rating, userId, description);

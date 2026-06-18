@@ -26,6 +26,7 @@ const plant_identification_routes_1 = __importDefault(require("./routes/plant_id
 const explore_plant_routes_1 = __importDefault(require("./routes/explore_plant.routes"));
 const contactSupport_routes_1 = __importDefault(require("./routes/contactSupport.routes"));
 const support_routes_2 = __importDefault(require("./routes/support.routes"));
+const systemSettings_routes_1 = __importDefault(require("./routes/systemSettings.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const upload = (0, multer_1.default)({ dest: "uploads/" });
@@ -58,5 +59,6 @@ app.use("/api/plant-identification", plant_identification_routes_1.default);
 app.use("/api/explore-plant", explore_plant_routes_1.default);
 app.use("/api/contact-support", contactSupport_routes_1.default);
 app.use("/api/support", support_routes_2.default);
+app.use("/api/settings", systemSettings_routes_1.default);
 app.use("/api/diseases", diseases_routes_1.default);
 exports.default = app;

@@ -4,6 +4,7 @@ exports.getFeedbackForUser = exports.getFeedbackByIdController = exports.getAllF
 const feedback_services_1 = require("../services/feedback.services");
 const logs_1 = require("../utils/logs");
 const notif_services_1 = require("../services/notif.services");
+const systemSettings_services_1 = require("../services/systemSettings.services");
 const createFeedback = async (req, res) => {
     console.log("BODY:", req.body);
     try {
@@ -14,6 +15,12 @@ const createFeedback = async (req, res) => {
         }
         if (typeof rating !== "number" || rating < 1 || rating > 5) {
             return res.status(400).json({ error: "Rating must be between 1 and 5." });
+        }
+        const feedbackEnabled = await (0, systemSettings_services_1.isFeedbackEnabled)();
+        if (!feedbackEnabled) {
+            return res.status(403).json({
+                error: "Feedback submissions are currently disabled. Please try again later.",
+            });
         }
         const feedback = await (0, feedback_services_1.submitFeedback)(rating, userId, description);
         await (0, notif_services_1.createNotification)(userId, `Thanks for your feedback, ${req.user?.firstName ?? ""}! ⭐`, "Your rating has been submitted successfully. We appreciate your support in helping improve Thryve.");

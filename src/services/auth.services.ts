@@ -40,6 +40,37 @@ export const registerUser = async (
   return user;
 };
 
+export const registerAdminUser = async (
+  email: string,
+  password: string,
+  role: "ADMIN" | "OWNER" | "SPECIALIST",
+  username: string,
+  firstName: string,
+  lastName: string,
+  profile?: string
+) => {
+  const hashedPassword = await argon2.hash(password);
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      role,
+      username,
+      firstName,
+      lastName,
+      profile,
+      isRegisteredVerify: true,
+      registerOtp: null,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User register failed");
+  }
+
+  return user;
+};
+
 export const resendRegistrationOtp = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -121,6 +152,11 @@ export const changePassword = async (
     throw new Error("New password and confirm password do not match");
   }
 
+  const isSamePassword = await argon2.verify(user.password, newPassword);
+  if (isSamePassword) {
+    throw new Error("New password must be different from your current password");
+  }
+
   const newHashedPassword = await argon2.hash(newPassword);
 
   await prisma.user.update({
@@ -193,6 +229,7 @@ export const editUser = async (
     firstName?: string;
     lastName?: string;
     profile?: string;
+    role?: "ADMIN" | "OWNER" | "SPECIALIST" | "CUSTOMER";
   }
 ) => {
   // const user = await prisma.user.findUnique({
@@ -211,12 +248,13 @@ export const editUser = async (
     where: { id: userId },
     data: updates,
     select: {
-    id: true,
-    email: true,
-    username: true,
-    firstName: true,
-    lastName: true,
-  },
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
   });
 
   return updated;
@@ -231,8 +269,8 @@ export const archiveUser = async (userId: any) => {
     throw new Error(`User with ID ${userId} not found`);
   }
 
-  if (user.role !== 'CUSTOMER') {
-    throw new Error(`Only users with the role 'CUSTOMER' can be archived`);
+  if (user.role !== "CUSTOMER" && user.role !== "ADMIN" && user.role !== "OWNER" && user.role !== "SPECIALIST") {
+    throw new Error(`This user cannot be archived`);
   }
 
   const archivedUser = await prisma.user.update({

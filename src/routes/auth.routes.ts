@@ -13,6 +13,7 @@ import {
   verifyAccountOtp,
   resendVerifyOtp,
   deleteAccount,
+  createAdminAccount,
   updateRole,
 } from "../controllers/auth.controllers";
 import { authenticateToken } from "../middlewares/auth.middleware";
@@ -22,10 +23,16 @@ const router = Router();
 
 //For Login/Register Routes
 router.post("/register", register as any);
+router.post(
+  "/create-admin-account",
+  authenticateToken,
+  Roles("OWNER"),
+  createAdminAccount as any
+);
 router.post("/login", login);
 router.post("/refresh-token", refreshAccessToken as any);
 router.get("/get-info", authenticateToken, getInfo as any);
-router.get("/get-users-list", fetchAllCustomerUsers as any);
+router.get("/get-users-list", authenticateToken, Roles("OWNER", "ADMIN"), fetchAllCustomerUsers as any);
 router.get("/get-itadmin-list", authenticateToken, fetchAllAdminUsers as any);
 router.get("/get-admins-list", authenticateToken, fetchAllSubAdmin as any);
 router.post(
@@ -34,16 +41,26 @@ router.post(
   Roles("CUSTOMER"),
   updatePassword as any
 );
-router.post("/edit-user", authenticateToken, updateUser as any);
+router.post(
+  "/edit-user",
+  authenticateToken,
+  Roles("OWNER"),
+  updateUser as any
+);
 router.post(
   "/delete-user/:id",
   authenticateToken,
-  Roles("ADMIN"),
+  Roles("OWNER"),
   removeUser as any
 );
 router.post("/verify-account", verifyAccountOtp as any);
 router.post("/resend-verify-otp", resendVerifyOtp as any);
 router.post("/delete-account", deleteAccount as any);
-router.put("/update-role", updateRole as any);
+router.put(
+  "/update-role",
+  authenticateToken,
+  Roles("OWNER"),
+  updateRole as any
+);
 
 export default router;

@@ -47,7 +47,7 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
   - 70–89 → likely real
   - 50–69 → uncertain or mixed materials
   - below 50 → likely plastic/fake
-- If authenticity_confidence < 50, set "isOriginal": false.
+- If authenticity_confidence < 65, set "isOriginal": false.
 
 ### Confidence handling:
 - If "scan_confidence" < 70:
@@ -121,7 +121,7 @@ Analyze the attached plant image and return ONLY a strict JSON object (no extra 
         100,
         Math.max(0, parsed.authenticity_confidence)
       );
-      parsed.isOriginal = parsed.authenticity_confidence >= 50;
+      parsed.isOriginal = parsed.authenticity_confidence >= 65;
     } else {
       parsed.authenticity_confidence = parsed.isOriginal ? 95 : 30;
     }
