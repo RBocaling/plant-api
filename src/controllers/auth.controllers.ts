@@ -189,12 +189,14 @@ export const createAdminAccount = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { identifier, password } = req.body;
+  const { identifier, password, client } = req.body;
+  const clientType = client === "admin" ? "admin" : "mobile";
 
   try {
     const { accessToken, refreshToken, user } = await loginUser(
       identifier,
-      password
+      password,
+      clientType
     );
 
     await logActivity({ userId: user.id, activity: "User logged in" });

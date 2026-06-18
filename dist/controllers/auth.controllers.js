@@ -124,9 +124,10 @@ const createAdminAccount = async (req, res) => {
 };
 exports.createAdminAccount = createAdminAccount;
 const login = async (req, res) => {
-    const { identifier, password } = req.body;
+    const { identifier, password, client } = req.body;
+    const clientType = client === "admin" ? "admin" : "mobile";
     try {
-        const { accessToken, refreshToken, user } = await (0, auth_services_1.loginUser)(identifier, password);
+        const { accessToken, refreshToken, user } = await (0, auth_services_1.loginUser)(identifier, password, clientType);
         await (0, logs_1.logActivity)({ userId: user.id, activity: "User logged in" });
         res.status(201).json({
             accessToken,

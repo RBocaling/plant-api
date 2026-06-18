@@ -92,7 +92,11 @@ export const resendRegistrationOtp = async (email: string) => {
   return { message: "Verification code resent successfully" };
 };
 
-export const loginUser = async (identifier: string, password: string) => {
+export const loginUser = async (
+  identifier: string,
+  password: string,
+  client: "admin" | "mobile" = "mobile"
+) => {
   const user = await prisma.user.findFirst({
     where: {
       OR: [{ email: identifier }, { username: identifier }],
@@ -130,9 +134,17 @@ export const loginUser = async (identifier: string, password: string) => {
   }
 
   const staffRoles = ["ADMIN", "OWNER", "SPECIALIST"];
-  if (!staffRoles.includes(user.role)) {
+  const isStaff = staffRoles.includes(user.role);
+
+  if (client === "admin" && !isStaff) {
     throw new Error(
       "This account cannot access the admin dashboard. Please use the mobile app."
+    );
+  }
+
+  if (client === "mobile" && isStaff) {
+    throw new Error(
+      "Staff accounts must sign in through the admin dashboard, not the mobile app."
     );
   }
 
