@@ -26,7 +26,7 @@ router.post("/register", register as any);
 router.post(
   "/create-admin-account",
   authenticateToken,
-  Roles("OWNER"),
+  Roles("OWNER", "ADMIN"),
   createAdminAccount as any
 );
 router.post("/login", login);
@@ -44,7 +44,7 @@ router.post(
 router.post(
   "/edit-user",
   authenticateToken,
-  Roles("OWNER"),
+  Roles("OWNER", "ADMIN"),
   updateUser as any
 );
 router.post(

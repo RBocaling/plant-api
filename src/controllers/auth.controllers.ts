@@ -110,13 +110,24 @@ export const createAdminAccount = async (req: Request, res: Response) => {
     profile,
   } = req.body;
 
+  const requesterRole = String(req.user?.role || "").toUpperCase();
   const allowedRoles = ["ADMIN", "OWNER", "SPECIALIST"];
   const normalizedRole = String(role || "").toUpperCase();
 
   if (!allowedRoles.includes(normalizedRole)) {
     return res.status(400).json({
-      message: "Role must be ADMIN, OWNER, or SPECIALIST",
+      message: "Role must be IT Admin, Super Admin, or Plant Specialist",
     });
+  }
+
+  if (requesterRole === "ADMIN" && normalizedRole === "OWNER") {
+    return res.status(403).json({
+      message: "IT Admin cannot create Super Admin accounts.",
+    });
+  }
+
+  if (requesterRole !== "OWNER" && requesterRole !== "ADMIN") {
+    return res.status(403).json({ message: "You cannot create staff accounts." });
   }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -266,21 +277,39 @@ export const updatePassword = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   const { id, email, username, firstName, lastName, profile, role } = req.body;
+  const requesterRole = String(req.user?.role || "").toUpperCase();
+  const nextRole = role ? String(role).toUpperCase() : undefined;
 
   if (!id) {
     return res.status(400).json({ message: "A valid user ID is required" });
   }
 
-  // const user = await prisma.user.findUnique({ where: { id: Number(id) } });
-
-  // if (!user) {
-  //   return res.status(404).json({ message: `User with ID ${id} not found` });
-  // }
-
-  // if (user.role !== UserRole.CUSTOMER) {
-  //   return res.status(403).json({ message: 'Only users with role CUSTOMER can be edited' });
-  // }
   try {
+    const existingUser = await prisma.user.findUnique({ where: { id } });
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (existingUser.role === "CUSTOMER") {
+      return res.status(403).json({
+        message: "Customer accounts cannot be edited from staff management.",
+      });
+    }
+
+    if (requesterRole === "ADMIN") {
+      if (existingUser.role === "OWNER") {
+        return res.status(403).json({
+          message: "IT Admin cannot edit Super Admin accounts.",
+        });
+      }
+      if (nextRole === "OWNER") {
+        return res.status(403).json({
+          message: "IT Admin cannot assign the Super Admin role.",
+        });
+      }
+    }
+
     const updated = await editUser(id, {
       email,
       username,
@@ -308,6 +337,13 @@ export const updateUser = async (req: Request, res: Response) => {
 export const removeUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const requesterRole = String(req.user?.role || "").toUpperCase();
+
+    if (requesterRole !== "OWNER") {
+      return res.status(403).json({
+        error: "Only the Super Admin can delete staff accounts.",
+      });
+    }
 
     if (!id) {
       return res.status(400).json({ error: "Invalid user ID" });

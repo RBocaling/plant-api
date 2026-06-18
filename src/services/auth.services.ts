@@ -116,9 +116,23 @@ export const loginUser = async (identifier: string, password: string) => {
   if (!isPasswordValid) {
     throw new Error("Incorrect password!");
   }
+
+  if (user.archived) {
+    throw new Error(
+      "This account has been deactivated. Contact your administrator."
+    );
+  }
+
   if (!user.isRegisteredVerify) {
     throw new Error(
       "Account not verified. Please check your email to verify your account."
+    );
+  }
+
+  const staffRoles = ["ADMIN", "OWNER", "SPECIALIST"];
+  if (!staffRoles.includes(user.role)) {
+    throw new Error(
+      "This account cannot access the admin dashboard. Please use the mobile app."
     );
   }
 
@@ -200,7 +214,7 @@ export const userInfo = async (id: any) => {
 export const getAllCustomerUsers = async () => {
   try {
     const customers = await prisma.user.findMany({
-      // where: { role: UserRole.CUSTOMER },
+      where: { archived: false },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -269,8 +283,16 @@ export const archiveUser = async (userId: any) => {
     throw new Error(`User with ID ${userId} not found`);
   }
 
-  if (user.role !== "CUSTOMER" && user.role !== "ADMIN" && user.role !== "OWNER" && user.role !== "SPECIALIST") {
-    throw new Error(`This user cannot be archived`);
+  if (user.role === "CUSTOMER") {
+    throw new Error("Customer accounts cannot be removed from the admin panel.");
+  }
+
+  if (user.role === "OWNER") {
+    throw new Error("Super Admin accounts cannot be removed.");
+  }
+
+  if (user.role !== "ADMIN" && user.role !== "SPECIALIST") {
+    throw new Error("This staff account cannot be removed.");
   }
 
   const archivedUser = await prisma.user.update({
