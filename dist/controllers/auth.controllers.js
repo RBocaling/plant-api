@@ -68,16 +68,11 @@ const createAdminAccount = async (req, res) => {
     const normalizedRole = String(role || "").toUpperCase();
     if (!allowedRoles.includes(normalizedRole)) {
         return res.status(400).json({
-            message: "Role must be IT Admin, Super Admin, or Plant Specialist",
+            message: "Role must be IT Admin, Plant Store Owner, or Plant Specialist",
         });
     }
-    if (requesterRole === "ADMIN" && normalizedRole === "OWNER") {
-        return res.status(403).json({
-            message: "IT Admin cannot create Super Admin accounts.",
-        });
-    }
-    if (requesterRole !== "OWNER" && requesterRole !== "ADMIN") {
-        return res.status(403).json({ message: "You cannot create staff accounts." });
+    if (requesterRole !== "OWNER") {
+        return res.status(403).json({ message: "Only the Plant Store Owner can create staff accounts." });
     }
     const existingUser = await prisma_1.default.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -213,16 +208,24 @@ const updateUser = async (req, res) => {
             });
         }
         if (requesterRole === "ADMIN") {
-            if (existingUser.role === "OWNER") {
+            if (existingUser.role === "OWNER" ||
+                (existingUser.role !== "ADMIN" && existingUser.role !== "SPECIALIST")) {
                 return res.status(403).json({
-                    message: "IT Admin cannot edit Super Admin accounts.",
+                    message: "IT Admin can only edit roles for IT Admin and Plant Specialist accounts.",
                 });
             }
-            if (nextRole === "OWNER") {
+            if (nextRole && !["ADMIN", "SPECIALIST"].includes(nextRole)) {
                 return res.status(403).json({
-                    message: "IT Admin cannot assign the Super Admin role.",
+                    message: "IT Admin can only assign IT Admin or Plant Specialist roles.",
                 });
             }
+            const updated = await (0, auth_services_1.editUser)(id, {
+                role: (nextRole || existingUser.role),
+            });
+            await (0, logs_1.logActivity)({ userId: id, activity: "Updated staff role" });
+            return res
+                .status(200)
+                .json({ message: "User role updated successfully", data: updated });
         }
         const updated = await (0, auth_services_1.editUser)(id, {
             email,
@@ -253,7 +256,7 @@ const removeUser = async (req, res) => {
         const requesterRole = String(req.user?.role || "").toUpperCase();
         if (requesterRole !== "OWNER") {
             return res.status(403).json({
-                error: "Only the Super Admin can delete staff accounts.",
+                error: "Only the Plant Store Owner can delete staff accounts.",
             });
         }
         if (!id) {

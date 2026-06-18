@@ -74,8 +74,13 @@ export const patchAdminSettings = async (req: Request, res: Response) => {
   }
 };
 
-export const checkReportsExport = async (_req: Request, res: Response) => {
+export const checkReportsExport = async (req: Request, res: Response) => {
   try {
+    const requesterRole = String(req.user?.role || "").toUpperCase();
+    if (requesterRole === "SPECIALIST") {
+      return res.status(200).json({ allowed: true });
+    }
+
     const enabled = await isReportsEnabled();
     if (!enabled) {
       return res.status(403).json({

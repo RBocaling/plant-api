@@ -220,7 +220,7 @@ const archiveUser = async (userId) => {
         throw new Error("Customer accounts cannot be removed from the admin panel.");
     }
     if (user.role === "OWNER") {
-        throw new Error("Super Admin accounts cannot be removed.");
+        throw new Error("Plant Store Owner accounts cannot be removed.");
     }
     if (user.role !== "ADMIN" && user.role !== "SPECIALIST") {
         throw new Error("This staff account cannot be removed.");

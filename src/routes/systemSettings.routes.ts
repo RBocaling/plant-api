@@ -14,19 +14,19 @@ router.get("/public", getPublicSettings as any);
 router.get(
   "/reports-export-check",
   authenticateToken,
-  Roles("OWNER", "ADMIN"),
+  Roles("OWNER", "ADMIN", "SPECIALIST"),
   checkReportsExport as any
 );
 router.get(
   "/",
   authenticateToken,
-  Roles("OWNER"),
+  Roles("OWNER", "ADMIN"),
   getAdminSettings as any
 );
 router.patch(
   "/",
   authenticateToken,
-  Roles("OWNER"),
+  Roles("OWNER", "ADMIN"),
   patchAdminSettings as any
 );
 

@@ -26,7 +26,7 @@ router.post("/register", register as any);
 router.post(
   "/create-admin-account",
   authenticateToken,
-  Roles("OWNER", "ADMIN"),
+  Roles("OWNER"),
   createAdminAccount as any
 );
 router.post("/login", login);

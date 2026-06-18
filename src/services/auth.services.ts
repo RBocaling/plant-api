@@ -288,7 +288,7 @@ export const archiveUser = async (userId: any) => {
   }
 
   if (user.role === "OWNER") {
-    throw new Error("Super Admin accounts cannot be removed.");
+    throw new Error("Plant Store Owner accounts cannot be removed.");
   }
 
   if (user.role !== "ADMIN" && user.role !== "SPECIALIST") {
