@@ -27,6 +27,7 @@ const explore_plant_routes_1 = __importDefault(require("./routes/explore_plant.r
 const contactSupport_routes_1 = __importDefault(require("./routes/contactSupport.routes"));
 const support_routes_2 = __importDefault(require("./routes/support.routes"));
 const systemSettings_routes_1 = __importDefault(require("./routes/systemSettings.routes"));
+const securityHeaders_middleware_1 = require("./middlewares/securityHeaders.middleware");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const upload = (0, multer_1.default)({ dest: "uploads/" });
@@ -35,16 +36,12 @@ const corsOptions = {
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 };
+app.use(securityHeaders_middleware_1.securityHeaders);
 app.use((0, body_parser_1.json)({ limit: "10mb" }));
 app.use((0, cors_1.default)(corsOptions));
 app.options(/.*/, (0, cors_1.default)(corsOptions));
-app.use((_req, res, next) => {
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
-    res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
-    next();
+app.get("/api", (_req, res) => {
+    res.status(200).json({ status: "ok", service: "thryve-api" });
 });
 app.get("/api/health", (_req, res) => {
     res.status(200).json({ status: "ok" });

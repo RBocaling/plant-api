@@ -22,6 +22,7 @@ import explorePlantRoutes from "./routes/explore_plant.routes";
 import contactSupportRoutes from "./routes/contactSupport.routes";
 import supportRoutes from "./routes/support.routes";
 import systemSettingsRoutes from "./routes/systemSettings.routes";
+import { securityHeaders } from "./middlewares/securityHeaders.middleware";
 dotenv.config();
 
 const app = express();
@@ -34,23 +35,13 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+app.use(securityHeaders);
 app.use(json({ limit: "10mb" }));
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
-app.use((_req, res, next) => {
-  res.setHeader("X-Frame-Options", "DENY");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), payment=()"
-  );
-  res.setHeader(
-    "Content-Security-Policy",
-    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
-  );
-  next();
+app.get("/api", (_req, res) => {
+  res.status(200).json({ status: "ok", service: "thryve-api" });
 });
 
 app.get("/api/health", (_req, res) => {
