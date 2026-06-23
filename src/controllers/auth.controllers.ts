@@ -13,6 +13,7 @@ import {
   getAllAdmin,
   getAllSubAdmin,
   resendRegistrationOtp,
+  updateCustomerProfile,
 } from "../services/auth.services";
 import {
   generateAccessToken,
@@ -37,11 +38,15 @@ export const register = async (req: Request, res: Response) => {
     where: { email },
   });
 
-  const existingUsername = await prisma.user.findUnique({
-    where: { username },
+  const existingUsername = await prisma.user.findFirst({
+    where: {
+      username,
+      isRegisteredVerify: true,
+      ...(existingUser ? { NOT: { email } } : {}),
+    },
   });
 
-  if (existingUser) {
+  if (existingUser?.isRegisteredVerify) {
     return res.status(400).json({ message: "Email is already in use" });
   }
 
@@ -205,6 +210,13 @@ export const login = async (req: Request, res: Response) => {
       refreshToken,
     });
   } catch (error: any) {
+    if (error?.requiresVerification) {
+      return res.status(403).json({
+        message: error.message,
+        requiresVerification: true,
+        email: error.email,
+      });
+    }
     res.status(401).json({ message: error.message });
   }
 };
@@ -226,6 +238,13 @@ export const adminLogin = async (req: Request, res: Response) => {
       refreshToken,
     });
   } catch (error: any) {
+    if (error?.requiresVerification) {
+      return res.status(403).json({
+        message: error.message,
+        requiresVerification: true,
+        email: error.email,
+      });
+    }
     res.status(401).json({ message: error.message });
   }
 };
@@ -266,6 +285,39 @@ export const getInfo = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ error: error.message || "Failed to fetch user info" });
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const { firstName, lastName, username, contactNumber } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
+
+  if (!firstName?.trim() || !lastName?.trim() || !username?.trim()) {
+    return res.status(400).json({
+      message: "First name, last name, and username are required",
+    });
+  }
+
+  try {
+    const user = await updateCustomerProfile(userId.toString(), {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      username: username.trim(),
+      contactNumber: contactNumber?.trim() || "",
+    });
+
+    await logActivity({ userId, activity: "Updated profile information" });
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      data: user,
+    });
+  } catch (error: any) {
+    return res.status(400).json({ message: error.message || "Failed to update profile" });
   }
 };
 

@@ -13,19 +13,17 @@ const sendOTP = async (email) => {
     const user = await prisma_1.default.user.findUnique({ where: { email } });
     if (!user)
         throw new Error("User with this email does not exist");
+    if (!user.isRegisteredVerify) {
+        throw new Error("This account is not verified yet. Please complete registration verification first.");
+    }
     const otp = (0, crypto_1.randomInt)(1000, 9999).toString();
     const expiresAt = new Date(Date.now() + otpExpiryMinutes * 60000);
     await prisma_1.default.oTP.upsert({
         where: { email },
         update: { otp, expiresAt },
-        create: { email, otp, expiresAt }
+        create: { email, otp, expiresAt },
     });
-    await email_1.transporter.sendMail({
-        from: `"Plant Support" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Password Reset OTP',
-        text: `Your OTP is ${otp}. It expires in ${otpExpiryMinutes} minutes.`,
-    });
+    await (0, email_1.sendPasswordResetEmail)(email, otp, otpExpiryMinutes);
 };
 exports.sendOTP = sendOTP;
 const verifyOTP = async (email, otp) => {
@@ -48,7 +46,7 @@ const resetPassword = async (email, newPassword) => {
     const hashedPassword = await argon2_1.default.hash(newPassword);
     await prisma_1.default.user.update({
         where: { email },
-        data: { password: hashedPassword }
+        data: { password: hashedPassword },
     });
     await prisma_1.default.oTP.delete({ where: { email } });
 };

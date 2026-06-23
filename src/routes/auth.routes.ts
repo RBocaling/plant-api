@@ -16,13 +16,13 @@ import {
   deleteAccount,
   createAdminAccount,
   updateRole,
+  updateProfile,
 } from "../controllers/auth.controllers";
 import { authenticateToken } from "../middlewares/auth.middleware";
 import { Roles } from "../middlewares/role.middleware";
 
 const router = Router();
 
-//For Login/Register Routes
 router.post("/register", register as any);
 router.post(
   "/create-admin-account",
@@ -30,10 +30,16 @@ router.post(
   Roles("OWNER"),
   createAdminAccount as any
 );
-router.post("/login", login);
+router.post("/login", login as any);
 router.post("/admin-login", adminLogin as any);
 router.post("/refresh-token", refreshAccessToken as any);
 router.get("/get-info", authenticateToken, getInfo as any);
+router.patch(
+  "/update-profile",
+  authenticateToken,
+  Roles("CUSTOMER"),
+  updateProfile as any
+);
 router.get("/get-users-list", authenticateToken, Roles("OWNER", "ADMIN"), fetchAllCustomerUsers as any);
 router.get("/get-itadmin-list", authenticateToken, fetchAllAdminUsers as any);
 router.get("/get-admins-list", authenticateToken, fetchAllSubAdmin as any);

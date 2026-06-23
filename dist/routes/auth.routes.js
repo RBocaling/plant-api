@@ -5,13 +5,13 @@ const auth_controllers_1 = require("../controllers/auth.controllers");
 const auth_middleware_1 = require("../middlewares/auth.middleware");
 const role_middleware_1 = require("../middlewares/role.middleware");
 const router = (0, express_1.Router)();
-//For Login/Register Routes
 router.post("/register", auth_controllers_1.register);
 router.post("/create-admin-account", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER"), auth_controllers_1.createAdminAccount);
 router.post("/login", auth_controllers_1.login);
 router.post("/admin-login", auth_controllers_1.adminLogin);
 router.post("/refresh-token", auth_controllers_1.refreshAccessToken);
 router.get("/get-info", auth_middleware_1.authenticateToken, auth_controllers_1.getInfo);
+router.patch("/update-profile", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("CUSTOMER"), auth_controllers_1.updateProfile);
 router.get("/get-users-list", auth_middleware_1.authenticateToken, (0, role_middleware_1.Roles)("OWNER", "ADMIN"), auth_controllers_1.fetchAllCustomerUsers);
 router.get("/get-itadmin-list", auth_middleware_1.authenticateToken, auth_controllers_1.fetchAllAdminUsers);
 router.get("/get-admins-list", auth_middleware_1.authenticateToken, auth_controllers_1.fetchAllSubAdmin);

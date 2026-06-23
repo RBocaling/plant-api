@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRole = exports.deleteAccount = exports.resendVerifyOtp = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.getInfo = exports.refreshAccessToken = exports.adminLogin = exports.login = exports.createAdminAccount = exports.register = void 0;
+exports.updateRole = exports.deleteAccount = exports.resendVerifyOtp = exports.verifyAccountOtp = exports.fetchAllSubAdmin = exports.fetchAllAdminUsers = exports.fetchAllCustomerUsers = exports.removeUser = exports.updateUser = exports.updatePassword = exports.updateProfile = exports.getInfo = exports.refreshAccessToken = exports.adminLogin = exports.login = exports.createAdminAccount = exports.register = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const auth_services_1 = require("../services/auth.services");
 const token_1 = require("../utils/token");
@@ -14,10 +14,14 @@ const register = async (req, res) => {
     const existingUser = await prisma_1.default.user.findUnique({
         where: { email },
     });
-    const existingUsername = await prisma_1.default.user.findUnique({
-        where: { username },
+    const existingUsername = await prisma_1.default.user.findFirst({
+        where: {
+            username,
+            isRegisteredVerify: true,
+            ...(existingUser ? { NOT: { email } } : {}),
+        },
     });
-    if (existingUser) {
+    if (existingUser?.isRegisteredVerify) {
         return res.status(400).json({ message: "Email is already in use" });
     }
     if (existingUsername) {
@@ -134,6 +138,13 @@ const login = async (req, res) => {
         });
     }
     catch (error) {
+        if (error?.requiresVerification) {
+            return res.status(403).json({
+                message: error.message,
+                requiresVerification: true,
+                email: error.email,
+            });
+        }
         res.status(401).json({ message: error.message });
     }
 };
@@ -149,6 +160,13 @@ const adminLogin = async (req, res) => {
         });
     }
     catch (error) {
+        if (error?.requiresVerification) {
+            return res.status(403).json({
+                message: error.message,
+                requiresVerification: true,
+                email: error.email,
+            });
+        }
         res.status(401).json({ message: error.message });
     }
 };
@@ -189,6 +207,35 @@ const getInfo = async (req, res) => {
     }
 };
 exports.getInfo = getInfo;
+const updateProfile = async (req, res) => {
+    const userId = req.user?.id;
+    const { firstName, lastName, username, contactNumber } = req.body;
+    if (!userId) {
+        return res.status(400).json({ message: "Invalid user ID" });
+    }
+    if (!firstName?.trim() || !lastName?.trim() || !username?.trim()) {
+        return res.status(400).json({
+            message: "First name, last name, and username are required",
+        });
+    }
+    try {
+        const user = await (0, auth_services_1.updateCustomerProfile)(userId.toString(), {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            username: username.trim(),
+            contactNumber: contactNumber?.trim() || "",
+        });
+        await (0, logs_1.logActivity)({ userId, activity: "Updated profile information" });
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            data: user,
+        });
+    }
+    catch (error) {
+        return res.status(400).json({ message: error.message || "Failed to update profile" });
+    }
+};
+exports.updateProfile = updateProfile;
 const updatePassword = async (req, res) => {
     const userId = req.user?.id;
     const { currentPassword, newPassword, confirmNewPassword } = req.body;

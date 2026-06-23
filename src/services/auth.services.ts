@@ -13,30 +13,60 @@ export const registerUser = async (
   lastName: string,
   profile?: string
 ) => {
-  const hashedPassword = await argon2.hash(password);
-  const otp = generateOtp();
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      role,
+  const existing = await prisma.user.findUnique({ where: { email } });
+
+  if (existing?.isRegisteredVerify) {
+    throw new Error("Email is already in use");
+  }
+
+  const verifiedUsername = await prisma.user.findFirst({
+    where: {
       username,
-      firstName,
-      lastName,
-      profile,
-      registerOtp: Number(otp),
-      isRegisteredVerify: false,
+      isRegisteredVerify: true,
+      ...(existing ? { NOT: { email } } : {}),
     },
   });
 
-  
+  if (verifiedUsername) {
+    throw new Error("Username is already in use");
+  }
+
+  const hashedPassword = await argon2.hash(password);
+  const otp = generateOtp();
+
+  const user = existing
+    ? await prisma.user.update({
+        where: { email },
+        data: {
+          password: hashedPassword,
+          role,
+          username,
+          firstName,
+          lastName,
+          profile,
+          registerOtp: Number(otp),
+          isRegisteredVerify: false,
+        },
+      })
+    : await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          role,
+          username,
+          firstName,
+          lastName,
+          profile,
+          registerOtp: Number(otp),
+          isRegisteredVerify: false,
+        },
+      });
 
   if (!user) {
     throw new Error("User register failed");
   }
-  const send = await sendVerificationEmail(email, otp, 50);
-  console.log("send", send);
 
+  await sendVerificationEmail(email, otp, 50);
   return user;
 };
 
@@ -128,9 +158,12 @@ export const loginUser = async (
   }
 
   if (!user.isRegisteredVerify) {
-    throw new Error(
-      "Account not verified. Please check your email to verify your account."
-    );
+    const verificationError = new Error(
+      "Account not verified. Please verify your email to continue."
+    ) as Error & { requiresVerification?: boolean; email?: string };
+    verificationError.requiresVerification = true;
+    verificationError.email = user.email;
+    throw verificationError;
   }
 
   const staffRoles = ["ADMIN", "OWNER", "SPECIALIST"];
@@ -199,13 +232,13 @@ export const userInfo = async (id: any) => {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
-        id:true,
+        id: true,
         email: true,
         firstName: true,
         lastName: true,
         username: true,
+        contactNumber: true,
         role: true,
-
       },
     });
 
@@ -213,14 +246,74 @@ export const userInfo = async (id: any) => {
       throw new Error(`User with ID ${id} not found`);
     }
 
-      return {
+    return {
       ...user,
       role: user.role.toLowerCase(),
     };
   } catch (error) {
-    console.error('Service Error - userInfo:', error);
-    throw new Error('Failed to retrieve user info');
+    console.error("Service Error - userInfo:", error);
+    throw new Error("Failed to retrieve user info");
   }
+};
+
+export const updateCustomerProfile = async (
+  userId: string,
+  updates: {
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    contactNumber?: string;
+  }
+) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.role !== "CUSTOMER") {
+    throw new Error("Only customer profiles can be updated from the mobile app.");
+  }
+
+  if (updates.username && updates.username !== user.username) {
+    const usernameConflict = await prisma.user.findFirst({
+      where: {
+        username: updates.username,
+        isRegisteredVerify: true,
+        NOT: { id: userId },
+      },
+    });
+
+    if (usernameConflict) {
+      throw new Error("Username is already in use");
+    }
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(updates.firstName !== undefined ? { firstName: updates.firstName } : {}),
+      ...(updates.lastName !== undefined ? { lastName: updates.lastName } : {}),
+      ...(updates.username !== undefined ? { username: updates.username } : {}),
+      ...(updates.contactNumber !== undefined
+        ? { contactNumber: updates.contactNumber }
+        : {}),
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      username: true,
+      contactNumber: true,
+      role: true,
+    },
+  });
+
+  return {
+    ...updated,
+    role: updated.role.toLowerCase(),
+  };
 };
 
 export const getAllCustomerUsers = async () => {

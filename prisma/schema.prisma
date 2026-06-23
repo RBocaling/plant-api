@@ -62,6 +62,7 @@ model User {
   registerOtp        Int?
   isRegisteredVerify Boolean   @default(false)
   profile            String?
+  contactNumber      String?
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
